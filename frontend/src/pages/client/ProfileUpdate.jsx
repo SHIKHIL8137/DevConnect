@@ -29,6 +29,7 @@ const ProfileUpdate = () => {
    const [zoom, setZoom] = useState(1);
    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [errors, setErrors] = useState({});
+  const [loading,setLoding] =useState({crop:false,submit:false});
 
 useEffect(() => {
     if (user) {
@@ -111,7 +112,7 @@ useEffect(() => {
           formData.append('croppedImage', blob, 'cropped.jpg');
   
           try {
-            console.log(formData)
+            setLoding((val)=>({...val,crop:true}));
             const response = await ProfileImgUpdate(formData,'profile');
             if(!response.data.status) return toast.error(response.data.message);
             const result = await dispatch(fetchUserData());
@@ -123,6 +124,8 @@ useEffect(() => {
           } catch (error) {
             console.log(error)
             toast.error(error.response?.data?.message || "Something went wrong");
+          }finally{
+            setLoding((val)=>({...val,crop:false}));
           }
         }, 'image/jpeg');
       };
@@ -151,7 +154,7 @@ useEffect(() => {
   
 
     try {
-      console.log(formattedData)
+      setLoding((val)=>({...val,submit:true}));
       const response = await updateProfile(formattedData);
       if (!response.data.status) return toast.error(response.data.message);
 
@@ -165,6 +168,8 @@ useEffect(() => {
     } catch (error) {
       console.log(error)
       toast.error(error.response?.data?.message || "Something went wrong");
+    }finally{
+      setLoding((val)=>({...val,submit:false}));
     }
 
   };
@@ -258,9 +263,13 @@ useEffect(() => {
               <button
                 type="button"
                 onClick={createCroppedImage}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-              >
-                Apply
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex justify-center items-center"
+              disabled={loading.crop}>
+                {loading.crop?(
+              <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+            ):(
+              "Apply"
+            )}  
               </button>
             </div>
           </div>
@@ -315,7 +324,7 @@ useEffect(() => {
               value={formData.phoneNumber}
               onChange={handleChange}
               className={`w-full p-3 bg-gray-100 rounded-lg ${errors.userName ? 'border-red-500' : 'border-gray-200'}`}
-            />
+            maxLength={10}/>
             {errors.phoneNumber && (
                 <p className="mt-1 text-sm text-red-500">{errors.phoneNumber}</p>
               )}
@@ -397,9 +406,14 @@ useEffect(() => {
         <button 
           type="button"
           onClick={handleSubmit}
-          className="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium shadow-sm"
-        >
-          Update
+          className="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium shadow-sm flex justify-center items-center"
+        disabled={loading.submit}>
+           {loading.submit?(
+              <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+            ):(
+              "Update"
+            )}  
+          
         </button>
       </div>
     </div>

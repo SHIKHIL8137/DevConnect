@@ -20,6 +20,7 @@ const Profile = () => {
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+    const [loading,setLoding] = useState({crop:false})
   const navigate = useNavigate()
 
 
@@ -77,6 +78,7 @@ const Profile = () => {
             formData.append('croppedImage', blob, 'cropped.jpg');
     
             try {
+              setLoding((val)=>({...val,crop:true}));
               const response = await ProfileImgUpdate(formData,'cover');
               if(!response.data.status) return toast.error(response.data.message);
               const result = await dispatch(fetchUserData());
@@ -88,6 +90,8 @@ const Profile = () => {
             } catch (error) {
               console.log(error)
               toast.error(error.response?.data?.message || "Something went wrong");
+            }finally{
+              setLoding((val)=>({...val,crop:false}));
             }
           }, 'image/jpeg');
         };
@@ -134,7 +138,7 @@ const Profile = () => {
                   setShowCropper(false);
                   setImage(null);
                 }}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 cursor-pointer"
               >
                 <X size={24} />
               </button>
@@ -176,16 +180,20 @@ const Profile = () => {
                   setShowCropper(false); 
                   setImage(null);
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={createCroppedImage}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-              >
-                Apply
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 cursor-pointer flex justify-center items-center"
+              disabled={loading.crop}>
+                {loading.crop?(
+              <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+            ):(
+              "Apply"
+            )}  
               </button>
             </div>
           </div>
@@ -243,13 +251,13 @@ const Profile = () => {
 
         
        
-        <button className="w-full bg-blue-500 text-white font-medium rounded-lg py-3 mb-4">
+        <button className="w-full bg-blue-500 text-white font-medium cursor-pointer rounded-lg py-3 mb-4">
           Create new Job
         </button>
-        <button onClick={()=>navigate('/client/profileUpdate')} className="w-full bg-gray-100 text-gray-700 font-medium rounded-lg py-3 mb-4 flex items-center justify-center">
+        <button onClick={()=>navigate('/client/profileUpdate')} className="w-full cursor-pointer bg-gray-100 text-gray-700 font-medium rounded-lg py-3 mb-4 flex items-center justify-center">
           <Edit size={18} className="mr-2" /> Edit Profile
         </button>
-        <button className="w-full bg-gray-100 text-gray-700 font-medium rounded-lg py-3">
+        <button className="w-full bg-gray-100 text-gray-700 font-medium cursor-pointer rounded-lg py-3">
           Complaints
         </button>
       </div>
