@@ -1,5 +1,5 @@
 import express from 'express';
-import { checkUserName, loginValidate, otpgenerate, otpValidation, validateUser ,getUserData, updateUser,updateProfileImage, forgetPassword, changePassword} from '../controllers/authController.js';
+import { checkUserName, loginValidate, otpgenerate, otpValidation, validateUser ,getUserData, updateUser,updateProfileImage, forgetPassword, changePassword, updateFreelancerProfile} from '../controllers/authController.js';
 import { generateToken } from '../config/jwt.js';
 import passport from 'passport';
 import { jwtAuthMiddleware } from '../middleware/jwtAuth.js';
@@ -58,6 +58,7 @@ route.patch('/update',jwtAuthMiddleware,updateUser);
 route.post('/upload-profileImg',jwtAuthMiddleware ,upload.single('croppedImage'), updateProfileImage);
 route.post('/forgetPassword',forgetPassword)
 route.patch('/validateUserChangPswd',changePassword);
+route.patch('/updateFreelancer',jwtAuthMiddleware,updateFreelancerProfile);
 
 
 export default route;

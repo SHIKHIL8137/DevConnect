@@ -266,11 +266,11 @@ const Profile = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg text-gray-600 mb-4">Completed Projects</h3>
-            <p className="text-4xl font-bold text-green-600">40</p>
+            <p className="text-4xl font-bold text-green-600">0</p>
           </div>
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg text-gray-600 mb-4">Active Projects</h3>
-            <p className="text-4xl font-bold text-blue-600">1</p>
+            <p className="text-4xl font-bold text-blue-600">0</p>
           </div>
         </div>
         
@@ -278,8 +278,9 @@ const Profile = () => {
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-2xl font-bold mb-6">Recent Projects</h3>
           
-          <div className="space-y-6">
-            <div>
+          <div className="space-y-6 flex justify-center items-center">
+            <p>No projects</p>
+            {/* <div>
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <h4 className="text-xl font-semibold">E-commerce Redesign</h4>
@@ -323,7 +324,7 @@ const Profile = () => {
                 <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">In Progress</span>
               </div>
               <p className="text-gray-500 text-sm">Apr 2025 • 14 days</p>
-            </div>
+            </div> */}
           </div>
           
           <div className="mt-6 text-blue-500 flex items-center justify-end">

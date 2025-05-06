@@ -21,6 +21,7 @@ const SignUp = () => {
     const [isOtpVerified, setIsOtpVerified] = useState(false);
     const [countdown, setCountdown] = useState(0);
     const [canResend, setCanResend] = useState(false);
+    const [loading,setLoding] = useState({gotp:false,verify:false,submit:false})
   
     const navigate = useNavigate();
     const location = useLocation();
@@ -48,6 +49,7 @@ const SignUp = () => {
     };
   
     const handleSendOtp = async() => {
+      setLoding((val)=>({...val,gotp:true}))
       if (isValidEmail(email)&&isValidUsername(userName)) {
         try {
           const response = await getOtp({email:email});
@@ -65,6 +67,8 @@ const SignUp = () => {
                  }else{
                    toast.error('Internal server error')
          }
+        }finally{
+          setLoding((val)=>({...val,gotp:false}))
         }
       } else {
         if(!isValidEmail(email)){
@@ -132,6 +136,7 @@ const SignUp = () => {
     const handleVerifyOtp = async() => {
       if (validateOTP(otp)) {
         try {
+          setLoding((val)=>({...val,verify:true}))
           const response = await validateOtp({otp,email});
           if(!response.data.status) return toast.error(response.data.message);
           toast.success(response.data.message);
@@ -140,6 +145,8 @@ const SignUp = () => {
           localStorage.setItem('otp',response.data.otp);
         } catch (error) {
           toast.error('internal server error');
+        }finally{
+          setLoding((val)=>({...val,gotp:false}))
         }
       } else {
         toast.error('Please enter the OTP');
@@ -164,6 +171,7 @@ const SignUp = () => {
       if(!storedOtp) return toast.error('otp expired');
       
       try {
+        setLoding((val)=>({...val,submit:true}))
         const response = await validateUser({email,otp:storedOtp,userName,password,role})
         if(!response.data.status){
           toast.error(response.data.message);
@@ -181,6 +189,8 @@ const SignUp = () => {
         toast.success(response.data.message);
       } catch (error) {
         toast.error(response.data.message);
+      }finally{
+        setLoding((val)=>({...val,submit:false}))
       }
   };
 
@@ -273,18 +283,27 @@ const SignUp = () => {
                 <button
                   type="button"
                   onClick={handleSendOtp}
-                  className="bg-violet-500 text-white px-4 py-2 rounded-lg hover:bg-violet-600 transition-colors cursor-pointer"
-                  disabled={!email}
+                  className="bg-violet-500 text-white px-4 py-2 rounded-lg hover:bg-violet-600 transition-colors cursor-pointer flex justify-center items-center"
+                  disabled={!email || loading.gotp}
                 >
-                  Get OTP
+                  {loading.gotp?(
+              <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+            ):(
+              "Get OTP"
+            )}   
                 </button>
               ) : !isOtpVerified ? (
                 <button
                   type="button"
                   onClick={handleVerifyOtp}
-                  className="bg-green-500 cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                  className="bg-green-500 cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors flex justify-center items-center"
+                  disabled={loading.verify}
                 >
-                  Verify
+                  {loading.verify?(
+              <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+            ):(
+              "Verify"
+            )}   
                 </button>
               ) : (
                 <div className="bg-green-100 text-green-700 px-3 py-2 rounded-lg flex items-center">
@@ -353,10 +372,14 @@ const SignUp = () => {
             <button
               onClick={handleSubmit}
               type="button"
-              className="w-full cursor-pointer bg-violet-500 hover:bg-violet-600 text-white py-3 rounded-lg font-medium transition-colors mt-4"
-              disabled={!isOtpVerified}
+              className="w-full cursor-pointer bg-violet-500 hover:bg-violet-600 text-white py-3 rounded-lg font-medium transition-colors mt-4 flex justify-center items-center"
+              disabled={!isOtpVerified || loading.submit}
             >
-              SIGN UP
+               {loading.submit?(
+              <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+            ):(
+              "SIGN UP"
+            )}   
             </button>
 
             <div className="text-center mt-4">

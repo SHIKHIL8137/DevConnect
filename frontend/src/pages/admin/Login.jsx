@@ -14,7 +14,7 @@ const DevConnectLogin = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
+  const [loading,setLoding] = useState(false)
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -28,6 +28,7 @@ const DevConnectLogin = () => {
     }
   
     try {
+      setLoding(true)
       const response = await loginValidate({ email, password });
   
       if (!response.data.status) {
@@ -43,6 +44,8 @@ const DevConnectLogin = () => {
           }
     }catch(error){
       toast.error(error.response.data.message);
+    }finally{
+      setLoding(false)
     }
    
   };
@@ -155,9 +158,12 @@ const DevConnectLogin = () => {
               
               <button
                 onClick={handleSubmit}
-                className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200"
-              >
-                Sign In
+                className="w-full py-3  px-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 flex items-center justify-center"
+              disabled={loading}>{loading?(
+                <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+              ):(
+                "Sign In"
+              )}               
               </button>
               
           

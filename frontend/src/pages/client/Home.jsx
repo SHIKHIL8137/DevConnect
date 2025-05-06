@@ -107,7 +107,6 @@ const FreelancerMarketplace =()=> {
             </button>
           </div>
 
-          {/* Sidebar Filters */}
           <div className={`lg:w-1/4 pr-0 lg:pr-6 ${mobileFiltersOpen ? 'block' : 'hidden lg:block'}`}>
             <div className="bg-white p-5 rounded-lg shadow mb-4">
               <div className="font-medium text-gray-800 mb-4 flex items-center">
@@ -115,7 +114,6 @@ const FreelancerMarketplace =()=> {
                 Filters
               </div>
 
-              {/* Categories */}
               <div className="mb-6">
                 <h3 className="font-medium text-gray-700 mb-3">Categories</h3>
                 <ul>
@@ -126,8 +124,6 @@ const FreelancerMarketplace =()=> {
                   ))}
                 </ul>
               </div>
-
-              {/* Hourly Rate */}
               <div className="mb-6">
                 <h3 className="font-medium text-gray-700 mb-3">Hourly Rate</h3>
                 <ul>
@@ -139,7 +135,6 @@ const FreelancerMarketplace =()=> {
                 </ul>
               </div>
 
-              {/* Experience Level */}
               <div>
                 <h3 className="font-medium text-gray-700 mb-3">Experience Level</h3>
                 <ul>
@@ -153,7 +148,6 @@ const FreelancerMarketplace =()=> {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="lg:w-3/4">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-gray-800">Available Freelancers</h2>
@@ -171,7 +165,6 @@ const FreelancerMarketplace =()=> {
               </div>
             </div>
 
-            {/* Freelancer Cards */}
             <div className="space-y-4">
               {freelancers.map((freelancer) => (
                 <div key={freelancer.id} className="bg-white rounded-lg shadow p-6">

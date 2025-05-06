@@ -33,6 +33,7 @@ const ProfileUpdate = () => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [loading,setLoading] = useState({crop:false,update:false})
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -101,6 +102,7 @@ const ProfileUpdate = () => {
   
      const createCroppedImage = async () => {
       try {
+        
         const canvas = document.createElement('canvas');
         const imageObj = new Image();
         imageObj.src = image;
@@ -129,7 +131,7 @@ const ProfileUpdate = () => {
             formData.append('croppedImage', blob, 'cropped.jpg');
     
             try {
-              console.log(formData)
+              setLoading((val)=>({...val,crop:true}));
               const response = await ProfileImgUpdate(formData,'profile');
               if(!response.data.status) return toast.error(response.data.message);
               const result = await dispatch(fetchUserData());
@@ -141,6 +143,8 @@ const ProfileUpdate = () => {
             } catch (error) {
               console.log(error)
               toast.error(error.response?.data?.message || "Something went wrong");
+            }finally{
+              setLoading((val)=>({...val,crop:false}));
             }
           }, 'image/jpeg');
         };
@@ -170,6 +174,7 @@ const ProfileUpdate = () => {
   
 
     try {
+      setLoading((val)=>({...val,update:true}));
       const response = await updateProfile(formattedData);
       if (!response.data.status) return toast.error(response.data.message);
 
@@ -183,6 +188,8 @@ const ProfileUpdate = () => {
     } catch (error) {
       console.log(error)
       toast.error(error.response?.data?.message || "Something went wrong");
+    }finally{
+      setLoading((val)=>({...val,update:false}));
     }
   };
   
@@ -276,9 +283,13 @@ const ProfileUpdate = () => {
               <button
                 type="button"
                 onClick={createCroppedImage}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-              >
-                Apply
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 cursor-pointer flex justify-center items-center"
+              disabled={loading.crop}>
+                 {loading.crop?(
+                <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+              ):(
+                "Apply"
+              )}                         
               </button>
             </div>
           </div>
@@ -501,9 +512,13 @@ const ProfileUpdate = () => {
           <button 
             type="button"
             onClick={handleSubmit}
-            className="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium shadow-md transition-colors"
+            className="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium shadow-md transition-colors cursor-pointer flex justify-center items-center" disabled={loading.update}
           >
-            Update
+             {loading.update?(
+                <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+              ):(
+                "Update"
+              )}           
           </button>
         </div>
       </div>

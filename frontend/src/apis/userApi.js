@@ -44,3 +44,6 @@ export const validateUserChangPswd = (formData)=>{
   return axiosInstance.patch('/user/validateUserChangPswd',formData)
 }
 
+export const updateFreelancer = (formData)=>{
+  return axiosInstance.patch('/user/updateFreelancer',formData,{withCredentials:true});
+}

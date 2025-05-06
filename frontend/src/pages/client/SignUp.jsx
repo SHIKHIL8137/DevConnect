@@ -16,6 +16,7 @@ const SignUp = () => {
   const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading,setLoding] = useState({gotp:false,verify:false,submit:false});
   
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
@@ -50,6 +51,7 @@ const SignUp = () => {
   const handleSendOtp = async() => {
     if (isValidEmail(email)&&isValidUsername(userName)) {
       try {
+        setLoding((val)=>({...val,gotp:true}));
         const response = await getOtp({email:email});
         if(!response.data.status){
           toast.error(response.data.message);
@@ -63,8 +65,10 @@ const SignUp = () => {
         if (error.response && error.response.status === 409 || error.response.status === 400) {
         toast.error(error.response.data.message);
         }else{
-          toast.error('Internal server error')
+          toast.error(error.response.data.message)
         }
+      }finally{
+        setLoding((val)=>({...val,gotp:false}));
       }
     } else {
       if(!isValidEmail(email)){
@@ -124,7 +128,7 @@ const SignUp = () => {
       setCanResend(false);
       toast.success(response.data.message);
     } catch (error) {
-      toast.error(response.data.message);
+      toast.error(error.response.data.message);
     }
 
   };
@@ -132,6 +136,7 @@ const SignUp = () => {
   const handleVerifyOtp = async() => {
     if (validateOTP(otp)) {
       try {
+        setLoding((val)=>({...val,verify:true}));
         const response = await validateOtp({otp,email});
         if(!response.data.status) return toast.error(response.data.message);
         toast.success(response.data.message);
@@ -139,7 +144,9 @@ const SignUp = () => {
         setCanResend(false);
         localStorage.setItem('otp',response.data.otp);
       } catch (error) {
-        toast.error('internal server error');
+        toast.error(error.response.data.message);
+      }finally{
+        setLoding((val)=>({...val,verify:false}));
       }
     } else {
       toast.error('Please enter the OTP');
@@ -164,6 +171,7 @@ const SignUp = () => {
     if(!storedOtp) return toast.error('otp expired');
     
     try {
+      setLoding((val)=>({...val,submit:true}));
       const response = await validateUser({email,otp:storedOtp,userName,password,role})
       if(!response.data.status){
         toast.error(response.data.message);
@@ -180,7 +188,9 @@ const SignUp = () => {
       setCountdown(0);
       toast.success(response.data.message);
     } catch (error) {
-      toast.error(response.data.message);
+      toast.error(error.response.data.message);
+    }finally{
+      setLoding((val)=>({...val,submit:false}));
     }
   };
 
@@ -275,18 +285,27 @@ const SignUp = () => {
                 <button
                   type="button"
                   onClick={handleSendOtp}
-                  className="bg-violet-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-violet-600 transition-colors"
-                  disabled={!email}
+                  className="bg-violet-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-violet-600 transition-colors flex justify-center items-center"
+                  disabled={!email || loading.gotp}
                 >
-                  Get OTP
+                  {loading.gotp?(
+              <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+            ):(
+              "Get OTP"
+            )}                                
                 </button>
               ) : !isOtpVerified ? (
                 <button
                   type="button"
                   onClick={handleVerifyOtp}
-                  className="bg-green-500 cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
-                >
-                  Verify
+                  className="bg-green-500 cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors flex justify-center items-center"
+                disabled={loading.verify}>
+                  {loading.verify?(
+              <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+            ):(
+              "Verify"
+            )}             
+                 
                 </button>
               ) : (
                 <div className="bg-green-100 text-green-700 px-3 py-2 rounded-lg flex items-center">
@@ -355,10 +374,15 @@ const SignUp = () => {
             <button
               onClick={handleSubmit}
               type="button"
-              className="w-full cursor-pointer bg-violet-500 hover:bg-violet-600 text-white py-3 rounded-lg font-medium transition-colors mt-4"
-              disabled={!isOtpVerified}
-            >
-              SIGN UP
+              className="w-full cursor-pointer bg-violet-500 hover:bg-violet-600 text-white py-3 rounded-lg font-medium transition-colors mt-4 flex justify-center items-center"
+              disabled={!isOtpVerified || loading.submit}
+            > {loading.submit?(
+              <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+            ):(
+              "SIGN UP"
+            )}      
+              
+             
             </button>
 
             <div className="text-center mt-4">

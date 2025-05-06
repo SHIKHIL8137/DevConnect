@@ -165,8 +165,7 @@ export const checkUserName = async (req,res)=>{
 
 export const otpValidation = async (req,res)=>{
 try {
-  const {otp,email} = req.body;
-    
+  const {otp,email} = req.body;   
   if(otp.trim() === "") return res.status(400).json({status:false,message:"OTP missing"})
   if(!email.trim()) return res.status(400).json({status:false,message:"email required"})    
 const findOTP = await OTP.findOne({email});
@@ -383,6 +382,57 @@ export const updateUser = async (req, res) => {
   }
 };
 
+export const updateFreelancerProfile = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    const role = req.user?.role;
+    console.log(req.body)
+    console.log(userId,role)
+    if (!userId || role !== 'freelancer') {
+      return res.status(401).json({
+        status: false,
+        message: 'Unauthorized or invalid role',
+      });
+    }
+
+    const allowedFields = ['skills', 'position', 'about', 'pricePerHour'];
+    const updateData = {};
+
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({
+        status: false,
+        message: 'No valid fields provided to update',
+      });
+    }
+
+    await User.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: 'Freelancer profile updated successfully',
+    });
+
+  } catch (error) {
+    console.error('Error updating freelancer profile:', error);
+    return res.status(500).json({
+      status: false,
+      message: 'Server error while updating profile',
+      error: error.message,
+    });
+  }
+};
+
+
 export const updateProfileImage = async(req,res)=>{
   try {
     const type = req.query.type;
@@ -547,7 +597,7 @@ export const forgetPassword = async(req,res)=>{
 export const changePassword = async(req,res)=>{
   try {
     const { otp, email, password} = req.body;
-console.log(req.body)
+console.log('hello')
     if (
       !otp?.trim() ||
       !email?.trim() ||
@@ -555,7 +605,7 @@ console.log(req.body)
     ) {
       return res.status(400).json({ status: false, message: "Fields are missing" });
     }
-
+    console.log('hello')
     const existUser = await User.findOne({email});
 
     if (!existUser) {
@@ -564,20 +614,21 @@ console.log(req.body)
         message: "email not exist Try again.",
       });
     }
+    console.log('hello')
     const otpDB = await OTP.findOne({ email });
 
       if (!otpDB || !otpDB.otp || otpDB.otp !== otp) {
         return res.status(400).json({ status: false, message: "OTP expired or incorrect" });
       }
 
-
+      console.log('hi')
     const hashedPassword = await hash(password, 10);
-
+    console.log('hi')
     await User.findOneAndUpdate({email},{password:hashedPassword});
-
+    console.log('hello')
     await OTP.findOneAndDelete({email});
-    return res.status(201).json({ status: true, message: "Password Changed successFully" });
-
+    return res.status(200).json({ status: true, message: "Password Changed successFully" });
+    console.log('hello')
   } catch (error) {
     console.error(error);
     return res.status(500).json({ status: false, message: "Internal server error" });

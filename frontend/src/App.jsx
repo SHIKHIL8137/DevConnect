@@ -15,7 +15,7 @@ import ProfileFreelancer from './pages/freelancer/Profile'
 import ProfileUpdate from './pages/freelancer/ProfileUpdate'
 import ProfileUpdateClient from './pages/client/ProfileUpdate'
 import GoogleAuthRedirect from './pages/common/authGoogle'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchUserData } from './redux/thunk/userThunk'
 import { logout } from './redux/slices/userSlice'
@@ -23,6 +23,7 @@ import { logout as adminLogout} from './redux/slices/adminSlice'
 import AdminLogin from './pages/admin/login'
 import DevConnectDashboard from './pages/admin/DashBoard'
 import { fetchAdminData } from './redux/thunk/adminThunk'
+import ProfileCompletionModal from './components/user/modals/profileCompletionModal'
 
 
 function App() {
@@ -30,6 +31,7 @@ const dispatch = useDispatch()
 const {user} = useSelector((state)=>state.user);
 const {admin} = useSelector((state)=>state.admin);
 const location = useLocation();
+const [showModal, setShowModal] = useState(false);
 useEffect(() => {
   if(user){
     const verifyUser = async () => {
@@ -42,6 +44,17 @@ useEffect(() => {
         dispatch(logout()); 
       }else if (result.payload?.block) {
         dispatch(logout()) 
+      }else{
+        if (result.payload?.role === 'freelancer') {
+          const isIncomplete =
+            !result.payload?.position ||
+            !result.payload?.about ||
+            !result.payload?.pricePerHour ||
+            !result.payload?.skills || result.payload?.skills.length === 0;
+        
+          setShowModal(isIncomplete);
+        }
+        
       }
     };
     verifyUser();
@@ -85,7 +98,12 @@ useEffect(() => {
       <Route path="/admin/login" element={<AdminPublicRoute><AdminLogin /></AdminPublicRoute>} />
       <Route path="/admin/:tab?" element={<AdminProtectedRoute><DevConnectDashboard /></AdminProtectedRoute>} />
 
+     
     </Routes>
+    {user?.role === 'freelancer' && showModal && (
+        <ProfileCompletionModal closeModal={() => setShowModal(false)} />
+      )}
+
     </>
   )
 }

@@ -16,6 +16,7 @@ const Login = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [searchParams] = useSearchParams();
+  const[loading,setLoding] = useState(false)
 
   useEffect(() => {
     const error = searchParams.get('error');
@@ -51,6 +52,7 @@ const Login = () => {
     }
   
     try {
+      setLoding(true)
       const response = await loginUser({ userData: email, password });
   
       if (!response.data.status) {
@@ -67,6 +69,8 @@ const Login = () => {
   } catch (error) {
       const message = error.response?.data?.message || "Something went wrong";
       toast.error(message);
+    }finally{
+      setLoding(false)
     }
   };
 
@@ -157,9 +161,13 @@ const googleLogin = ()=>{
             <button
               onClick={handleSubmit}
               type="button"
-              className="w-full bg-violet-500 hover:bg-violet-600 text-white py-3 rounded-full font-medium transition-colors "
-            >
-              LOG IN
+              className="w-full bg-violet-500 hover:bg-violet-600 text-white py-3 rounded-full font-medium transition-colors flex justify-center items-center"
+            disabled={loading}>{loading?(
+              <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+            ):(
+              "LOG IN"
+            )}              
+              
             </button>
 
             <div className="text-center">
