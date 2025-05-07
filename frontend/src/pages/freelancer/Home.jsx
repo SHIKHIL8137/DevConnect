@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Star, ChevronDown, Filter ,Search, MessageSquare } from 'lucide-react';
 import Navbar from '../../components/user/navbar/navbar';
+import Footer from '../../components/user/footer/Footer';
 
 const FreelancerListing = () => {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -181,6 +182,7 @@ const FreelancerListing = () => {
         </div>
       </div>
     </div>  
+    <Footer/>
    </>
   );
 };

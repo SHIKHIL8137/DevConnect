@@ -4,6 +4,7 @@ import Navbar from '../../components/user/navbar/navbar';
 import { toast } from 'sonner';
 import { fetchUserData } from '../../redux/thunk/userThunk';
 import { useDispatch } from 'react-redux';
+import Footer from '../../components/user/footer/Footer';
 
 
 const FreelancerMarketplace =()=> {
@@ -207,6 +208,7 @@ const FreelancerMarketplace =()=> {
         </div>
       </div>
     </div>
+    <Footer/>
     </>
   );
 }

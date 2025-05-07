@@ -8,7 +8,6 @@ const userSchema =new mongoose.Schema({
   },
   googleId: {
     type: String,
-    unique: true,
   },
   userName: {
     type: String,
@@ -92,9 +91,5 @@ const userSchema =new mongoose.Schema({
 },{timestamps:true})
 
 
-userSchema.index(
-  { googleId: 1 },
-  { unique: true, partialFilterExpression: { googleId: { $exists: true, $ne: null } } }
-);
 
 export default mongoose.model('User', userSchema);

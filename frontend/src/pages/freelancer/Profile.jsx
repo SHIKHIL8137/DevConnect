@@ -108,11 +108,11 @@ const Profile = () => {
   return (
     <div className='pt-8 w-full min-h-screen bg-gray-100 '>
      <Navbar/>
-          <div className="flex flex-col lg:flex-row  gap-4 mt-15 p-4">
+          <div className="flex flex-col lg:flex-row gap-4 mt-15 p-4">
       <div className="w-full lg:w-1/3 bg-white rounded-lg shadow-md p-6 flex flex-col h-fit">
       <div className="relative mb-16">
 
-          <img src={croppedImage || null} className="w-full h-40 bg-gradient-to-r from-blue-600 to-blue-400 rounded-lg overflow-hidden relative"/>
+          <img src={croppedImage || null} className="w-full h-40 bg-gradient-to-r from-blue-600 to-blue-400 rounded-lg overflow-hidden object-cover relative"/>
 
           <div className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-lg cursor-pointer">
             <label htmlFor="profile-image" className="cursor-pointer">

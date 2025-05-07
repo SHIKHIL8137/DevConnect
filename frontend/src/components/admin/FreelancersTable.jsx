@@ -115,7 +115,17 @@ const FreelancersTable = () => {
                   <td className="p-4 pl-6">
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-lg flex items-center justify-center mr-3 text-white">
-                        <span className="font-medium">{freelancer.userName?.charAt(0) || '?'}</span>
+                      {freelancer.profileImage ? (
+                        <img
+                          src={freelancer.profileImage}
+                          alt={freelancer.userName}
+                          className="w-10 h-10 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center mr-3 text-white">
+                          <span className="font-medium">{freelancer.userName?.charAt(0)}</span>
+                        </div>
+                      )}
                       </div>
                       <div>
                         <p className="font-medium">{freelancer.userName || 'Unknown'}</p>
