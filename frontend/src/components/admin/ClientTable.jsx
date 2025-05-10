@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getClientsData, blockUser } from "../../apis/adminApi"; 
+import { getClientsData, blockUser } from "../../apis/adminApi";
 import debounce from "lodash.debounce";
 import { toast } from "sonner";
 import ConfirmBlockModal from "./bllockConformationModal";
@@ -13,10 +13,12 @@ const ClientsTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [actionType, setActionType] = useState("block");
+  const [loading,setLoading] = useState(false)
 
   useEffect(() => {
     const fetchClients = async () => {
       try {
+        setLoading(true);
         const response = await getClientsData(page, search);
         if (response.status) {
           setClients(response.data.clientData.clients);
@@ -24,6 +26,8 @@ const ClientsTable = () => {
         }
       } catch (error) {
         console.error("Error fetching clients:", error);
+      }finally{
+        setLoading(false);
       }
     };
 
@@ -50,16 +54,13 @@ const ClientsTable = () => {
     try {
       const response = await blockUser(clientId);
       if (!response.data.status) return toast.error(response.data.message);
-      
 
-      setClients(prevClients => 
-        prevClients.map(client => 
-          client._id === clientId 
-            ? { ...client, block: !client.block } 
-            : client
+      setClients((prevClients) =>
+        prevClients.map((client) =>
+          client._id === clientId ? { ...client, block: !client.block } : client
         )
       );
-      
+
       toast.success(response.data.message);
     } catch (error) {
       toast.error(error.response?.data?.message || "An error occurred");
@@ -85,21 +86,42 @@ const ClientsTable = () => {
         <table className="min-w-full">
           <thead>
             <tr className="bg-gray-50">
-              <th className="text-left p-4 pl-6 text-sm font-medium text-gray-500">Client</th>
-              <th className="text-left p-4 text-sm font-medium text-gray-500">Projects</th>
-              <th className="text-left p-4 text-sm font-medium text-gray-500">Total Spent</th>
-              <th className="text-left p-4 text-sm font-medium text-gray-500">Joined Date</th>
-              <th className="text-left p-4 text-sm font-medium text-gray-500">Action</th>
+              <th className="text-left p-4 pl-6 text-sm font-medium text-gray-500">
+                Client
+              </th>
+              <th className="text-left p-4 text-sm font-medium text-gray-500">
+                Projects
+              </th>
+              <th className="text-left p-4 text-sm font-medium text-gray-500">
+                Total Spent
+              </th>
+              <th className="text-left p-4 text-sm font-medium text-gray-500">
+                Joined Date
+              </th>
+              <th className="text-left p-4 text-sm font-medium text-gray-500">
+                Action
+              </th>
             </tr>
           </thead>
           <tbody>
-            {clients.length === 0 ? (
+            {loading?( <tr>
+                <td colSpan="5" className="p-6 text-center">
+                  <div className="flex justify-center items-center h-20">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                  </div>
+                </td>
+              </tr>):(clients.length === 0 ? (
               <tr>
-                <td colSpan="5" className="text-center p-4 text-gray-500">No clients found.</td>
+                <td colSpan="5" className="text-center p-4 text-gray-500">
+                  No clients found.
+                </td>
               </tr>
             ) : (
               clients.map((client) => (
-                <tr key={client._id} className="hover:bg-gray-50 transition-colors">
+                <tr
+                  key={client._id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
                   <td className="p-4 pl-6">
                     <div className="flex items-center">
                       {client.profileImage ? (
@@ -110,12 +132,16 @@ const ClientsTable = () => {
                         />
                       ) : (
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center mr-3 text-white">
-                          <span className="font-medium">{client.userName?.charAt(0)}</span>
+                          <span className="font-medium">
+                            {client.userName?.charAt(0)}
+                          </span>
                         </div>
                       )}
                       <div>
                         <p className="font-medium">{client.userName}</p>
-                        <p className="text-sm text-gray-500">{client.companyName || "Individual"}</p>
+                        <p className="text-sm text-gray-500">
+                          {client.companyName || "Individual"}
+                        </p>
                       </div>
                     </div>
                   </td>
@@ -125,7 +151,9 @@ const ClientsTable = () => {
                     </span>
                   </td>
                   <td className="p-4 text-sm font-medium">₹0</td>
-                  <td className="p-4 text-sm text-gray-600">{formatDate(client.createdAt)}</td>
+                  <td className="p-4 text-sm text-gray-600">
+                    {formatDate(client.createdAt)}
+                  </td>
                   <td className="p-4">
                     <button
                       className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
@@ -140,22 +168,27 @@ const ClientsTable = () => {
                   </td>
                 </tr>
               ))
-            )}
+            ))}
           </tbody>
         </table>
       </div>
 
       <div className="p-4 flex items-center justify-between">
-        <div className="text-sm text-gray-600">Page {page} of {totalPages}</div>
+        <div className="text-sm text-gray-600">
+          Page {page} of {totalPages}
+        </div>
         <div className="flex items-center">
-          <button 
-            onClick={() => setPage((prev) => Math.max(prev - 1, 1))} 
+          <button
+            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
             className="w-8 h-8 flex items-center justify-center rounded-lg mr-2 hover:bg-gray-50"
             disabled={page === 1}
           >
-            <ChevronLeft size={16} className={page === 1 ? "text-gray-300" : "text-gray-600"} />
+            <ChevronLeft
+              size={16}
+              className={page === 1 ? "text-gray-300" : "text-gray-600"}
+            />
           </button>
-          
+
           {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
             // Show current page and adjacent pages
             let pageToShow;
@@ -168,26 +201,37 @@ const ClientsTable = () => {
             } else {
               pageToShow = page - 2 + i;
             }
-            
+
             return (
               <button
                 key={pageToShow}
                 onClick={() => setPage(pageToShow)}
                 className={`w-8 h-8 flex items-center justify-center rounded-lg mr-2 ${
-                  pageToShow === page ? "bg-blue-600 text-white" : "hover:bg-gray-50 text-gray-600"
+                  pageToShow === page
+                    ? "bg-blue-600 text-white"
+                    : "hover:bg-gray-50 text-gray-600"
                 }`}
               >
-                <span className="text-sm">{String(pageToShow).padStart(2, "0")}</span>
+                <span className="text-sm">
+                  {String(pageToShow).padStart(2, "0")}
+                </span>
               </button>
             );
           })}
-          
-          <button 
-            onClick={() => setPage((prev) => (prev < totalPages ? prev + 1 : prev))} 
+
+          <button
+            onClick={() =>
+              setPage((prev) => (prev < totalPages ? prev + 1 : prev))
+            }
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-50"
             disabled={page === totalPages}
           >
-            <ChevronRight size={16} className={page === totalPages ? "text-gray-300" : "text-gray-600"} />
+            <ChevronRight
+              size={16}
+              className={
+                page === totalPages ? "text-gray-300" : "text-gray-600"
+              }
+            />
           </button>
         </div>
       </div>

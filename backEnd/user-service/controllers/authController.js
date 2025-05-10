@@ -1,32 +1,50 @@
 import { transporter } from "../config/nodeMailer.js";
 import { generateOTP, generateUserId } from "../util/reuseFunctions.js";
-import { generateToken , verifyToken } from "../config/jwt.js";
-import User from "../model/userModel.js";
-import OTP from '../model/otpModel.js'
+import { generateToken } from "../../shared/auth/config/jwt.js";
+import OTP from "../model/otpModel.js";
+import Freelancer from "../model/user/freelancerModel.js";
+import Client from "../model/user/clientMode.js";
 import { compare, hash } from "bcrypt";
 import moment from "moment";
 import { isValidEmail } from "../util/validation.js";
 import { validateProfileUpdate } from "../util/validateForm.js";
-import { uploadToCloudinary,removeFromCloudinary } from "../config/cloudinary.js";
 
 
 export const otpgenerate = async (req, res) => {
   try {
-    const {email} = req.body;
-    if(!email)return res.status(400).json({status:false,message:"email missing!!!"});
+    const { email, role } = req.body;
+    if (!role)
+      return res
+        .status(400)
+        .json({ status: false, message: "Role missing!!!" });
 
-    const emailExist = await User.findOne({email:email});
-    if(emailExist){
-      return res.status(409).json({status:false,message:"Email already exist"})
+    if (!email)
+      return res
+        .status(400)
+        .json({ status: false, message: "Email missing!!!" });
+
+    let emailExist;
+    if (role === "freelancer") {
+      emailExist = await Freelancer.findOne({ email });
+    } else if (role === "client") {
+      emailExist = await Client.findOne({ email });
+    } else {
+      return res.status(400).json({ status: false, message: "Invalid role!" });
+    }
+
+    if (emailExist) {
+      return res
+        .status(409)
+        .json({ status: false, message: "Email already exist" });
     }
 
     let otp = generateOTP();
 
     const mailOptions = {
-      from : 'devconnect916@gmail.com',
-      to : email,
-      subject: 'Your Verification Code',
-      text: `Your verification code is: ${otp}`, 
+      from: "devconnect916@gmail.com",
+      to: email,
+      subject: "Your Verification Code",
+      text: `Your verification code is: ${otp}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -120,63 +138,102 @@ export const otpgenerate = async (req, res) => {
           </div>
         </body>
         </html>
-      `
-    }
+      `,
+    };
 
-    transporter.sendMail(mailOptions,(error,info)=>{
-      if(error){
-        return res.status(500).json({status:false,message:"An error occures sending the mail"})
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return res.status(500).json({
+          status: false,
+          message: "An error occures sending the mail",
+        });
       }
-      console.log('Email sent',info.response)
-    })
+      console.log("Email sent", info.response);
+    });
 
-    const existUserOTP = await OTP.findOne({email:email});
-    if(existUserOTP){
-      await OTP.deleteMany({email:email});
+    const existUserOTP = await OTP.findOne({ email: email });
+    if (existUserOTP) {
+      await OTP.deleteMany({ email: email });
     }
-    const expiration = moment().add(10, 'minutes').toDate();
+    const expiration = moment().add(10, "minutes").toDate();
     const newOtp = new OTP({
       email,
       otp,
-      expiration
-    })
+      expiration,
+    });
     await newOtp.save();
-    res.status(200).json({status:true,message:"OTP sented given Mail",otp,email})
+    res
+      .status(200)
+      .json({ status: true, message: "OTP sented given Mail", otp, email });
   } catch (error) {
     console.log(error);
-    res.status(500).send('Internal Server Error');
+    res.status(500).send("Internal Server Error");
   }
 };
 
-export const checkUserName = async (req,res)=>{
+
+export const checkUserName = async (req, res) => {
   try {
-    const {userName:prefix} = req.body;
-    console.log(req.body)
+    const { userName: prefix } = req.body;
 
-    const userNameExist = await User.findOne({userName: { $regex: `^${prefix}`, $options: 'i' }})
+    if (!prefix) {
+      return res
+        .status(400)
+        .json({ status: false, message: "Username missing!" });
+    }
 
-    if (userNameExist)return res.status(400).json({ status: false});
-    return res.status(200).json({ status: true});
+    const freelancerExists = await Freelancer.findOne({
+      userName: { $regex: `^${prefix}`, $options: "i" },
+    });
+
+    const clientExists = await Client.findOne({
+      userName: { $regex: `^${prefix}`, $options: "i" },
+    });
+
+    if (freelancerExists || clientExists) {
+      return res
+        .status(400)
+        .json({ status: false, message: "Username already taken" });
+    }
+
+    return res
+      .status(200)
+      .json({ status: true, message: "Username available" });
   } catch (error) {
-    console.log(error)
-    return res.status(500).json({ status: false, message: "Internal Server Error" });
+    console.error(error);
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal Server Error" });
   }
-}
+};
 
-export const otpValidation = async (req,res)=>{
-try {
-  const {otp,email} = req.body;   
-  if(otp.trim() === "") return res.status(400).json({status:false,message:"OTP missing"})
-  if(!email.trim()) return res.status(400).json({status:false,message:"email required"})    
-const findOTP = await OTP.findOne({email});
-  if(!findOTP) return res.status(400).json({status:false,message:"OTP Expired"});
-  if(otp !== findOTP.otp) return res.status(400).json({status:false,message:"OTP Not Match"});
-  res.status(200).json({status:true,message:"OTP validated",otp});
-} catch (error) {
-  console.log(error)
-  return res.status(500).json({ status: false, message: "Internal Server Error" });
-}
-}
+
+export const otpValidation = async (req, res) => {
+  try {
+    const { otp, email } = req.body;
+    console.log(otp, email);
+
+    if (otp.trim() === "")
+      return res.status(400).json({ status: false, message: "OTP missing" });
+
+    if (!email.trim())
+      return res.status(400).json({ status: false, message: "email required" });
+
+    const findOTP = await OTP.findOne({ email });
+    if (!findOTP)
+      return res.status(400).json({ status: false, message: "OTP Expired" });
+
+    if (otp !== findOTP.otp)
+      return res.status(400).json({ status: false, message: "OTP Not Match" });
+
+    res.status(200).json({ status: true, message: "OTP validated", otp });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal Server Error" });
+  }
+};
 
 export const validateUser = async (req, res) => {
   try {
@@ -189,42 +246,64 @@ export const validateUser = async (req, res) => {
       !password?.trim() ||
       !role?.trim()
     ) {
-      return res.status(400).json({ status: false, message: "Fields are missing" });
+      return res
+        .status(400)
+        .json({ status: false, message: "Fields are missing" });
     }
 
-    const existUser = await User.findOne({
+    const userExistsInFreelancer = await Freelancer.findOne({
       $or: [{ userName }, { email }],
     });
 
-    if (existUser) {
+    const userExistsInClient = await Client.findOne({
+      $or: [{ userName }, { email }],
+    });
+
+    if (userExistsInFreelancer || userExistsInClient) {
       return res.status(409).json({
         status: false,
         message: "Username or email already taken. Try again.",
       });
     }
-    const otpDB = await OTP.findOne({email:email})
+    const otpDB = await OTP.findOne({ email: email });
     if (!otpDB.otp || otpDB.otp !== otp) {
-      return res.status(400).json({ status: false, message: "OTP expired or incorrect" });
+      return res
+        .status(400)
+        .json({ status: false, message: "OTP expired or incorrect" });
     }
 
     const hashedPassword = await hash(password, 10);
     const userId = generateUserId();
 
-    const newUser = new User({
+    const newUserData ={
       userId,
       userName,
       email,
       password: hashedPassword,
       role,
-    });
+    };
 
-    await newUser.save();
-    await OTP.findOneAndDelete({email:email});
-    return res.status(201).json({ status: true, message: "User created successfully" });
+    if (role === "freelancer") {
+      const newFreelancer = new Freelancer(newUserData);
+      await newFreelancer.save();
+    } else if (role === "client") {
+      const newClient = new Client(newUserData);
+      await newClient.save();
+    } else {
+      return res
+        .status(400)
+        .json({ status: false, message: "Invalid role provided" });
+    }
 
+    await OTP.findOneAndDelete({ email });
+    return res
+      .status(201)
+      .json({ status: true, message: "User created successfully" });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ status: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal server error" });
   }
 };
 
@@ -233,65 +312,80 @@ export const loginValidate = async (req, res) => {
     const { userData, password } = req.body;
 
     if (!userData || !password) {
-      return res.status(400).json({ status: false, message: "All fields are required" });
+      return res
+        .status(400)
+        .json({ status: false, message: "All fields are required" });
     }
 
     const query = isValidEmail(userData.trim())
       ? { email: userData.trim() }
       : { userName: userData.trim() };
 
-    const userExist = await User.findOne(query);
-    if (!userExist) return res.status(404).json({ status: false, message: "User not Found" });
+      let userExist = await Freelancer.findOne(query);
+      if (!userExist) userExist = await Client.findOne(query);
+  
+      if (!userExist)
+        return res.status(404).json({ status: false, message: "User not Found" });
 
-    if(userExist.block) return res.status(404).json({status:false,message:"User blocked by admin"});
+    if (userExist.block)
+      return res
+        .status(404)
+        .json({ status: false, message: "User blocked by admin" });
     if (!userExist.password && userExist.googleId) {
       return res.status(400).json({
         status: false,
-        message: "This account uses Google Sign-In. Please log in using Google.",
+        message:
+          "This account uses Google Sign-In. Please log in using Google.",
       });
     }
 
     if (!userExist.password) {
-      return res.status(400).json({ status: false, message: "Password not set for this user" });
+      return res
+        .status(400)
+        .json({ status: false, message: "Password not set for this user" });
     }
 
     const passwordMatch = await compare(password, userExist.password);
     if (!passwordMatch) {
-      return res.status(400).json({ status: false, message: "Password mismatch" });
+      return res
+        .status(400)
+        .json({ status: false, message: "Password mismatch" });
     }
-
 
     const token = generateToken({
       userId: userExist._id,
-      role: userExist.role, 
-      email: userExist.email})
+      role: userExist.role,
+      email: userExist.email,
+    });
 
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 60 * 60 * 1000
-      });
-    res.status(200).json({ status: true, message: "Login successful" ,token});
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 60 * 60 * 1000,
+    });
+    userExist.lastLogin = new Date();
+    await userExist.save();
+    res.status(200).json({ status: true, message: "Login successful", token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
 
-export const getUserData = async(req,res)=>{
+export const getUserData = async (req, res) => {
   try {
-    const{userId} = req.user;
-    console.log(userId)
-    const user = await User.findById(userId).select('-password');
-  
-    if (!user) return res.status(401).json({ message: 'User not found' });
-  res.status(200).json(user);
+    const { userId,role } = req.user;
+    const Model = role === "freelancer" ? Freelancer : Client;
+    const user = await Model.findById(userId).select("-password");
+
+    if (!user) return res.status(401).json({ message: "User not found" });
+    res.status(200).json(user);
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: false, message: "Internal server error" });
   }
-}
+};
 
 export const updateUser = async (req, res) => {
   try {
@@ -300,38 +394,43 @@ export const updateUser = async (req, res) => {
     if (!userId) {
       return res.status(401).json({
         status: false,
-        message: 'Authentication required',
+        message: "Authentication required",
       });
     }
 
-    const user = await User.findById(userId);
+    const Model = userRole === "freelancer" ? Freelancer : Client;
+
+    const user = await Model.findById(userId);
     if (!user) {
       return res.status(404).json({
         status: false,
-        message: 'User not found',
+        message: "User not found",
       });
     }
 
-    console.log(req.body)
-    const { errors, isValid, validData } = validateProfileUpdate(req.body,userRole);
+    const { errors, isValid, validData } = validateProfileUpdate(
+      req.body,
+      userRole
+    );
     if (!isValid) {
-      console.log(errors)
+      console.log(errors);
       return res.status(400).json({ status: false, errors });
     }
 
     const fieldMap = {
-      userName: 'userName',
-      phoneNumber: 'phoneNumber',
-      position :'position',
-      skills: 'skills',
-      gitHub: 'gitHub',
-      linkedIn: 'linkedIn',
-      email: 'email',
-      about: 'about',
-      twitter: 'twitter',
-      web: 'web',
-      address: 'address',
-      pricePerHour: 'pricePerHour',
+      userName: "userName",
+      phoneNumber: "phoneNumber",
+      position: "position",
+      skills: "skills",
+      gitHub: "gitHub",
+      linkedIn: "linkedIn",
+      email: "email",
+      about: "about",
+      twitter: "twitter",
+      web: "web",
+      address: "address",
+      pricePerHour: "pricePerHour",
+      companyName: "companyName"
     };
 
     const mappedData = {};
@@ -339,17 +438,40 @@ export const updateUser = async (req, res) => {
       const schemaField = fieldMap[key] || key;
       mappedData[schemaField] = value;
     }
-    console.log(mappedData)
+    console.log(mappedData);
 
     const allowedFields = {
-      freelancer: ['userName','position', 'email', 'skills', 'phoneNumber', 'about', 'pricePerHour', 'gitHub', 'linkedIn', 'twitter', 'web', 'address'],
-      client: ['userName','companyName', 'email', 'phoneNumber', 'about', 'address','linkedIn', 'twitter', 'web',],
+      freelancer: [
+        "userName",
+        "position",
+        "email",
+        "skills",
+        "phoneNumber",
+        "about",
+        "pricePerHour",
+        "gitHub",
+        "linkedIn",
+        "twitter",
+        "web",
+        "address",
+      ],
+      client: [
+        "userName",
+        "companyName",
+        "email",
+        "phoneNumber",
+        "about",
+        "address",
+        "linkedIn",
+        "twitter",
+        "web",
+      ],
     };
 
     if (!allowedFields[userRole]) {
       return res.status(403).json({
         status: false,
-        message: 'Invalid user role',
+        message: "Invalid user role",
       });
     }
 
@@ -359,9 +481,9 @@ export const updateUser = async (req, res) => {
         filteredData[key] = mappedData[key];
       }
     }
-    console.log(filteredData)
 
-   await User.findByIdAndUpdate(
+
+    await Model.findByIdAndUpdate(
       userId,
       { $set: filteredData },
       { new: true, runValidators: true }
@@ -369,14 +491,13 @@ export const updateUser = async (req, res) => {
 
     return res.status(200).json({
       status: true,
-      message: 'Profile updated successfully',
+      message: "Profile updated successfully",
     });
-
   } catch (error) {
-    console.error('Error updating user profile:', error);
+    console.error("Error updating user profile:", error);
     return res.status(500).json({
       success: false,
-      message: 'Server error while updating profile',
+      message: "Server error while updating profile",
       error: error.message,
     });
   }
@@ -386,16 +507,14 @@ export const updateFreelancerProfile = async (req, res) => {
   try {
     const userId = req.user?.userId;
     const role = req.user?.role;
-    console.log(req.body)
-    console.log(userId,role)
-    if (!userId || role !== 'freelancer') {
+    if (!userId || role !== "freelancer") {
       return res.status(401).json({
         status: false,
-        message: 'Unauthorized or invalid role',
+        message: "Unauthorized or invalid role",
       });
     }
 
-    const allowedFields = ['skills', 'position', 'about', 'pricePerHour'];
+    const allowedFields = ["skills", "position", "about", "pricePerHour"];
     const updateData = {};
 
     for (const field of allowedFields) {
@@ -407,11 +526,11 @@ export const updateFreelancerProfile = async (req, res) => {
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({
         status: false,
-        message: 'No valid fields provided to update',
+        message: "No valid fields provided to update",
       });
     }
 
-    await User.findByIdAndUpdate(
+    await Freelancer.findByIdAndUpdate(
       userId,
       { $set: updateData },
       { new: true, runValidators: true }
@@ -419,60 +538,99 @@ export const updateFreelancerProfile = async (req, res) => {
 
     return res.status(200).json({
       status: true,
-      message: 'Freelancer profile updated successfully',
+      message: "Freelancer profile updated successfully",
     });
-
   } catch (error) {
-    console.error('Error updating freelancer profile:', error);
+    console.error("Error updating freelancer profile:", error);
     return res.status(500).json({
       status: false,
-      message: 'Server error while updating profile',
+      message: "Server error while updating profile",
       error: error.message,
     });
   }
 };
 
-
-export const updateProfileImage = async(req,res)=>{
+export const updateProfileImage = async (req, res) => {
   try {
     const type = req.query.type;
-    if(!req.file)return res.status(400).json({ status:false, message: 'No file uploaded' });
-      const profileImageUrl = req.file.path;
-      const userId = req.user.userId;
-      if(!userId) return res.status(401).json({status:false,message:'User not found'});
+    const userId = req.user.userId;
+    const userRole = req.user?.role;
+    const profileImageUrl = req.file.path;
+    if (!req.file)
+      return res
+        .status(400)
+        .json({ status: false, message: "No file uploaded" });
+    
+    if (!userId)
+      return res.status(401).json({ status: false, message: "User not found" });
 
-      if(type === 'cover'){
-        await User.findByIdAndUpdate(userId,{profileCoverImg:profileImageUrl},{new:true,upsert:true});
-      }else if(type === 'profile'){
-        await User.findByIdAndUpdate(userId,{profileImage:profileImageUrl},{new:true,upsert:true});
-      }else{
-        return res.status(404).json(({status:false,messgae:"image Type missing"}));
-      }
-      
-      res.status(200).json({status:true,message:"Profile image uploaded successfully"})
+    const Model = userRole === "freelancer" ? Freelancer : Client;
+
+    if (type === "cover") {
+      await Model.findByIdAndUpdate(
+        userId,
+        { profileCoverImg: profileImageUrl },
+        { new: true, upsert: true }
+      );
+    } else if (type === "profile") {
+      await Model.findByIdAndUpdate(
+        userId,
+        { profileImage: profileImageUrl },
+        { new: true, upsert: true }
+      );
+    } else {
+      return res
+        .status(404)
+        .json({ status: false, messgae: "image Type missing" });
+    }
+
+    res
+      .status(200)
+      .json({ status: true, message: "Profile image uploaded successfully" });
   } catch (error) {
-    console.error('Error uploading image:', error);
-    res.status(500).json({ message: 'Server error', error });
+    console.error("Error uploading image:", error);
+    res.status(500).json({ message: "Server error", error });
   }
-}
+};
 
-export const forgetPassword = async(req,res)=>{
+export const forgetPassword = async (req, res) => {
   try {
-    const {email} = req.body;
-    if(!email)return res.status(400).json({status:false,message:"email missing!!!"});
+    const { email } = req.body;
+    if (!email)
+      return res
+        .status(400)
+        .json({ status: false, message: "email missing!!!" });
 
-    const emailExist = await User.findOne({email:email});
-    if(!emailExist){
-      return res.status(409).json({status:false,message:"The user not exist"});
+
+    const freelancer = await Freelancer.findOne({ email: email });
+    
+
+    const client = await Client.findOne({ email: email });
+
+    if (!freelancer && !client) {
+      return res
+        .status(409)
+        .json({ status: false, message: "User does not exist" });
+    }
+
+    let userModel;
+    let user;
+
+    if (freelancer) {
+      userModel = Freelancer;
+      user = freelancer;
+    } else if (client) {
+      userModel = Client;
+      user = client;
     }
 
     let otp = generateOTP();
 
     const mailOptions = {
-      from : 'devconnect916@gmail.com',
-      to : email,
-      subject: 'Your Verification Code',
-      text: `Your verification code is: ${otp}`, 
+      from: "devconnect916@gmail.com",
+      to: email,
+      subject: "Your Verification Code",
+      text: `Your verification code is: ${otp}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -566,71 +724,81 @@ export const forgetPassword = async(req,res)=>{
           </div>
         </body>
         </html>
-      `
-    }
+      `,
+    };
 
-    transporter.sendMail(mailOptions,(error,info)=>{
-      if(error){
-        return res.status(500).json({status:false,message:"An error occures sending the mail"})
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return res
+          .status(500)
+          .json({
+            status: false,
+            message: "An error occures sending the mail",
+          });
       }
-      console.log('Email sent',info.response)
-    })
+      console.log("Email sent", info.response);
+    });
 
-    const existUserOTP = await OTP.findOne({email:email});
-    if(existUserOTP){
-      await OTP.deleteMany({email:email});
+    const existUserOTP = await OTP.findOne({ email: email });
+    if (existUserOTP) {
+      await OTP.deleteMany({ email: email });
     }
-    const expiration = moment().add(10, 'minutes').toDate();
+    const expiration = moment().add(10, "minutes").toDate();
     const newOtp = new OTP({
       email,
       otp,
-      expiration
-    })
+      expiration,
+    });
     await newOtp.save();
-    res.status(200).json({status:true,message:"OTP sented given Mail",otp,email})
+    res
+      .status(200)
+      .json({ status: true, message: "OTP sented given Mail", otp, email });
   } catch (error) {
     console.log(error);
-    res.status(500).send('Internal Server Error');
+    res.status(500).send("Internal Server Error");
   }
-}
+};
 
-export const changePassword = async(req,res)=>{
+export const changePassword = async (req, res) => {
   try {
-    const { otp, email, password} = req.body;
-console.log('hello')
-    if (
-      !otp?.trim() ||
-      !email?.trim() ||
-      !password?.trim()
-    ) {
-      return res.status(400).json({ status: false, message: "Fields are missing" });
+    const { otp, email, password } = req.body;
+    if (!otp?.trim() || !email?.trim() || !password?.trim()) {
+      return res
+        .status(400)
+        .json({ status: false, message: "Fields are missing" });
     }
-    console.log('hello')
-    const existUser = await User.findOne({email});
+    const freelancer = await Freelancer.findOne({ email });
+    const client = await Client.findOne({ email });
 
-    if (!existUser) {
-      return res.status(404).json({
-        status: false,
-        message: "email not exist Try again.",
-      });
+    let userModel;
+    if (freelancer) {
+      userModel = Freelancer;
+    } else if (client) {
+      userModel = Client;
+    } else {
+      return res
+        .status(404)
+        .json({ status: false, message: "Email does not exist. Try again." });
     }
-    console.log('hello')
+  
     const otpDB = await OTP.findOne({ email });
 
-      if (!otpDB || !otpDB.otp || otpDB.otp !== otp) {
-        return res.status(400).json({ status: false, message: "OTP expired or incorrect" });
-      }
+    if (!otpDB || !otpDB.otp || otpDB.otp !== otp) {
+      return res
+        .status(400)
+        .json({ status: false, message: "OTP expired or incorrect" });
+    }
 
-      console.log('hi')
     const hashedPassword = await hash(password, 10);
-    console.log('hi')
-    await User.findOneAndUpdate({email},{password:hashedPassword});
-    console.log('hello')
-    await OTP.findOneAndDelete({email});
-    return res.status(200).json({ status: true, message: "Password Changed successFully" });
-    console.log('hello')
+    await userModel.findOneAndUpdate({ email }, { password: hashedPassword });
+    await OTP.findOneAndDelete({ email });
+    return res
+      .status(200)
+      .json({ status: true, message: "Password Changed successFully" });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ status: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal server error" });
   }
-}
+};

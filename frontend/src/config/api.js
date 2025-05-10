@@ -1,17 +1,22 @@
-import axios from 'axios';
+import axios from "axios";
 
 export const axiosInstance = axios.create({
-  baseURL : 'http://localhost:5000',
-  headers :{
-    'content-Type' : 'application/json'
+  baseURL: "http://localhost:5000",
+  headers: {
+    "content-Type": "application/json",
   },
-  withCredentials: true, 
-})
+  withCredentials: true,
+});
 
 export const axiosInstanceMultipart = axios.create({
-  baseURL :  'http://localhost:5000',
-  headers :{
-    'Content-Type': 'multipart/form-data'
+  baseURL: "http://localhost:5000",
+  headers: {
+    "Content-Type": "multipart/form-data",
   },
-  withCredentials: true, 
-})
+  withCredentials: true,
+});
+
+export const axiosInstanceWithOutMultipart = axios.create({
+  baseURL: "http://localhost:5000",
+  withCredentials: true,
+});

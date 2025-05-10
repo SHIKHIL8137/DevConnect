@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useSelector } from "react-redux";
 
-const TopNavbar = ({ toggleSidebar, activeTab }) => {
+const TopNavbar = ({ toggleSidebar }) => {
   const { admin } = useSelector((state) => state.admin);
 
   return (
@@ -32,7 +32,6 @@ const TopNavbar = ({ toggleSidebar, activeTab }) => {
                 {admin?.name?.slice(0, 2)?.toUpperCase() || "AD"}
               </span>
             </div>
-
           </div>
 
           <div className="ml-3 hidden md:block">

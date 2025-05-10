@@ -8,21 +8,20 @@ const otpSchema = new mongoose.Schema({
   otp: {
     type: String,
     required: true,
-    maxlength: 6,  
+    maxlength: 6,
   },
   expiration: {
     type: Date,
-    required: true, 
-    maxlength :6 
+    required: true,
+    maxlength: 6,
   },
   createdAt: {
     type: Date,
     default: Date.now,
-    expires:600 
+    expires: 600,
   },
 });
 
-otpSchema.index({ email: 1, createdAt: -1 }); 
+otpSchema.index({ email: 1, createdAt: -1 });
 
-export default mongoose.model('OTP', otpSchema);
-
+export default mongoose.model("OTP", otpSchema);

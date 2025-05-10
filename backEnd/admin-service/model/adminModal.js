@@ -1,41 +1,42 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const adminSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
   },
   email: {
     type: String,
     required: true,
     unique: true,
     lowercase: true,
-    trim: true
+    trim: true,
   },
   password: {
     type: String,
-    required: true
+    required: true,
   },
   phone: {
-    type: String
+    type: String,
   },
   role: {
     type: String,
-    default: 'admin'
+    default: "admin",
   },
   isSuperAdmin: {
     type: Boolean,
-    default: false
+    default: false,
   },
   isBlocked: {
     type: Boolean,
-    default: false
+    default: false,
   },
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
-export const Admin = mongoose.models.Admin || mongoose.model('Admin', adminSchema);
+export const Admin =
+  mongoose.models.Admin || mongoose.model("Admin", adminSchema);

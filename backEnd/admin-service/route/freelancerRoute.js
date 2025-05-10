@@ -1,9 +1,7 @@
-import express from 'express';
-import { getFreelancersData } from '../controllers/freelancerController.js';
+import express from "express";
+import { getFreelancersData } from "../controllers/freelancerController.js";
 const route = express.Router();
 
-route.get('/freelacerData',getFreelancersData)
+route.get("/freelacerData", getFreelancersData);
 
-
-
-export default route
+export default route;

@@ -1,4 +1,4 @@
-import validator from 'validator';
+import validator from "validator";
 
 export const validateProfileUpdate = (data, role) => {
   const errors = {};
@@ -17,7 +17,7 @@ export const validateProfileUpdate = (data, role) => {
   }
 
   if (data.phoneNumber) {
-    if (!validator.isMobilePhone(data.phoneNumber.toString(), 'any')) {
+    if (!validator.isMobilePhone(data.phoneNumber.toString(), "any")) {
       errors.phoneNumber = "Invalid phone number";
     } else {
       validData.phoneNumber = data.phoneNumber;
@@ -32,8 +32,7 @@ export const validateProfileUpdate = (data, role) => {
     }
   }
 
-
-  ['linkedIn', 'twitter', 'web'].forEach((field) => {
+  ["linkedIn", "twitter", "web"].forEach((field) => {
     const value = data[field];
     if (value) {
       if (!validator.isURL(value, { require_protocol: true })) {
@@ -43,7 +42,6 @@ export const validateProfileUpdate = (data, role) => {
       }
     }
   });
-
 
   if (role === "client") {
     if (!data.companyName || validator.isEmpty(data.companyName.trim())) {

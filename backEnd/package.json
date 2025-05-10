@@ -1,0 +1,27 @@
+{
+  "name": "microservices-root",
+  "scripts": {
+    "admin": "cd admin-service && npm run dev",
+    "api": "cd api-gateway && npm run dev",
+    "user": "cd user-service && npm run dev",
+    "verification": "cd verification-service && npm run dev",
+    "project": "cd project-service && npm run dev",
+    "dev": "concurrently \"npm run admin\" \"npm run api\" \"npm run user\" \"npm run verification\" \"npm run project\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "dependencies": {
+    "axios": "^1.9.0",
+    "cloudinary": "^1.41.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "mongoose": "^8.14.2",
+    "multer": "^1.4.5-lts.2",
+    "multer-storage-cloudinary": "^4.0.0",
+    "nodemon": "^3.1.10"
+  },
+  "type": "module"
+}

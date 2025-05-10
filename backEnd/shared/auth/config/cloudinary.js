@@ -1,6 +1,6 @@
-// config/cloudinary.js
-import pkg from 'cloudinary';
-import dotenv from 'dotenv';
+
+import pkg from "cloudinary";
+import dotenv from "dotenv";
 dotenv.config();
 
 const { v2: cloudinary } = pkg;
@@ -11,15 +11,17 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-
 export const uploadToCloudinary = async (fileBuffer, folder) => {
-  return await cloudinary.uploader.upload_stream({
-    resource_type: "image",
-    folder: folder,
-  }, (error, result) => {
-    if (error) throw error;
-    return result;
-  });
+  return await cloudinary.uploader.upload_stream(
+    {
+      resource_type: "image",
+      folder: folder,
+    },
+    (error, result) => {
+      if (error) throw error;
+      return result;
+    }
+  );
 };
 
 export const removeFromCloudinary = async (publicId) => {

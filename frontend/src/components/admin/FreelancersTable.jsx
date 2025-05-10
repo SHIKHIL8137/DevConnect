@@ -13,10 +13,12 @@ const FreelancersTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [actionType, setActionType] = useState("block");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchFreelancer = async () => {
       try {
+        setLoading(true);
         const response = await getFreelancersData(page, search);
         if (response.status) {
           setFreelancers(response.data.freelancerData.freelancers);
@@ -25,6 +27,8 @@ const FreelancersTable = () => {
       } catch (error) {
         console.error("Error fetching freelancers:", error);
         toast.error("Failed to load freelancers");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -54,31 +58,36 @@ const FreelancersTable = () => {
         toast.error("User ID is missing");
         return;
       }
-      
+
       const response = await blockUser(userId);
-      
+
       if (!response || !response.data) {
         toast.error("Invalid response from server");
         return;
       }
-      
+
       if (!response.data.status) {
         toast.error(response.data.message || "Failed to update user status");
         return;
       }
-      
-      setFreelancers(prevFreelancers => 
-        prevFreelancers.map(freelancer => 
-          freelancer._id === userId 
-            ? { ...freelancer, block: !freelancer.block } 
+
+      setFreelancers((prevFreelancers) =>
+        prevFreelancers.map((freelancer) =>
+          freelancer._id === userId
+            ? { ...freelancer, block: !freelancer.block }
             : freelancer
         )
       );
-      
-      toast.success(response.data.message || "User status updated successfully");
+
+      toast.success(
+        response.data.message || "User status updated successfully"
+      );
     } catch (error) {
       console.error("Block action error:", error);
-      toast.error(error.response?.data?.message || "An error occurred while updating user status");
+      toast.error(
+        error.response?.data?.message ||
+          "An error occurred while updating user status"
+      );
     }
   };
 
@@ -101,47 +110,74 @@ const FreelancersTable = () => {
         <table className="min-w-full">
           <thead>
             <tr className="bg-gray-50">
-              <th className="text-left p-4 pl-6 text-sm font-medium text-gray-500">Freelancer</th>
-              <th className="text-left p-4 text-sm font-medium text-gray-500">Skills</th>
-              <th className="text-left p-4 text-sm font-medium text-gray-500">Rating</th>
-              <th className="text-left p-4 text-sm font-medium text-gray-500">Joined Date</th>
-              <th className="text-left p-4 text-sm font-medium text-gray-500">Action</th>
+              <th className="text-left p-4 pl-6 text-sm font-medium text-gray-500">
+                Freelancer
+              </th>
+              <th className="text-left p-4 text-sm font-medium text-gray-500">
+                Skills
+              </th>
+              <th className="text-left p-4 text-sm font-medium text-gray-500">
+                Rating
+              </th>
+              <th className="text-left p-4 text-sm font-medium text-gray-500">
+                Joined Date
+              </th>
+              <th className="text-left p-4 text-sm font-medium text-gray-500">
+                Action
+              </th>
             </tr>
           </thead>
           <tbody>
-            {freelancers.length > 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan="5" className="p-6 text-center">
+                  <div className="flex justify-center items-center h-20">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                  </div>
+                </td>
+              </tr>
+            ) : freelancers.length > 0 ? (
               freelancers.map((freelancer) => (
-                <tr key={freelancer._id} className="hover:bg-gray-50 transition-colors">
+                <tr
+                  key={freelancer._id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
                   <td className="p-4 pl-6">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-lg flex items-center justify-center mr-3 text-white">
-                      {freelancer.profileImage ? (
-                        <img
-                          src={freelancer.profileImage}
-                          alt={freelancer.userName}
-                          className="w-10 h-10 rounded-lg object-cover"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center mr-3 text-white">
-                          <span className="font-medium">{freelancer.userName?.charAt(0)}</span>
-                        </div>
-                      )}
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-lg flex items-center justify-center  text-white">
+                        {freelancer.profileImage ? (
+                          <img
+                            src={freelancer.profileImage}
+                            alt={freelancer.userName}
+                            className="w-10 h-10 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center  text-white">
+                            <span className="font-medium">
+                              {freelancer.userName?.charAt(0)}
+                            </span>
+                          </div>
+                        )}
                       </div>
                       <div>
-                        <p className="font-medium">{freelancer.userName || 'Unknown'}</p>
-                        <p className="text-sm text-gray-500">{freelancer.position || 'No position'}</p>
+                        <p className="font-medium">
+                          {freelancer.userName || "Unknown"}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {freelancer.position || "No position"}
+                        </p>
                       </div>
                     </div>
                   </td>
                   <td className="p-4 text-sm text-gray-600">
-                    {freelancer.skills && freelancer.skills.length > 0 
-                      ? freelancer.skills.join(", ") 
+                    {freelancer.skills && freelancer.skills.length > 0
+                      ? freelancer.skills.join(", ")
                       : "No skills listed"}
                   </td>
                   <td className="p-4 text-sm text-gray-600">N/A</td>
                   <td className="p-4 text-sm text-gray-600">
-                    {freelancer.createdAt 
-                      ? new Date(freelancer.createdAt).toLocaleDateString() 
+                    {freelancer.createdAt
+                      ? new Date(freelancer.createdAt).toLocaleDateString()
                       : "Unknown"}
                   </td>
                   <td className="p-4">
@@ -171,12 +207,16 @@ const FreelancersTable = () => {
 
       {totalPages > 0 && (
         <div className="p-4 flex items-center justify-between">
-          <div className="text-sm text-gray-600">Page {page} of {totalPages}</div>
+          <div className="text-sm text-gray-600">
+            Page {page} of {totalPages}
+          </div>
           <div className="flex items-center">
-            <button 
-              onClick={() => handlePageChange(page - 1)} 
+            <button
+              onClick={() => handlePageChange(page - 1)}
               disabled={page === 1}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg mr-2 ${page === 1 ? 'text-gray-300' : 'hover:bg-gray-50 text-gray-600'}`}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg mr-2 ${
+                page === 1 ? "text-gray-300" : "hover:bg-gray-50 text-gray-600"
+              }`}
             >
               <ChevronLeft size={16} />
             </button>
@@ -191,23 +231,31 @@ const FreelancersTable = () => {
               } else {
                 pageToShow = page - 2 + i;
               }
-              
+
               return (
                 <button
                   key={pageToShow}
                   onClick={() => handlePageChange(pageToShow)}
                   className={`w-8 h-8 flex items-center justify-center rounded-lg mr-2 ${
-                    pageToShow === page ? "bg-blue-600 text-white" : "hover:bg-gray-50 text-gray-600"
+                    pageToShow === page
+                      ? "bg-blue-600 text-white"
+                      : "hover:bg-gray-50 text-gray-600"
                   }`}
                 >
-                  <span className="text-sm">{String(pageToShow).padStart(2, "0")}</span>
+                  <span className="text-sm">
+                    {String(pageToShow).padStart(2, "0")}
+                  </span>
                 </button>
               );
             })}
-            <button 
-              onClick={() => handlePageChange(page + 1)} 
+            <button
+              onClick={() => handlePageChange(page + 1)}
               disabled={page === totalPages}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg ${page === totalPages ? 'text-gray-300' : 'hover:bg-gray-50 text-gray-600'}`}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg ${
+                page === totalPages
+                  ? "text-gray-300"
+                  : "hover:bg-gray-50 text-gray-600"
+              }`}
             >
               <ChevronRight size={16} />
             </button>

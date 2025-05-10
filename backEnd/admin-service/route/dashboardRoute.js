@@ -1,7 +1,7 @@
-import express from 'express';
-import { getDashboardData } from '../controllers/dashboardController.js';
+import express from "express";
+import { getDashboardData } from "../controllers/dashboardController.js";
 const route = express.Router();
 
-route.get('/dasboardData',getDashboardData)
+route.get("/dasboardData", getDashboardData);
 
-export default route
+export default route;
