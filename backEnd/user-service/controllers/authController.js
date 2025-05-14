@@ -310,7 +310,7 @@ export const validateUser = async (req, res) => {
 export const loginValidate = async (req, res) => {
   try {
     const { userData, password } = req.body;
-
+console.log(req.body)
     if (!userData || !password) {
       return res
         .status(400)
@@ -353,6 +353,7 @@ export const loginValidate = async (req, res) => {
     }
 
     const token = generateToken({
+      userName:userExist.userName,
       userId: userExist._id,
       role: userExist.role,
       email: userExist.email,
@@ -389,6 +390,7 @@ export const getUserData = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   try {
+    console.log('data',req.body)
     const userId = req.user?.userId;
     const userRole = req.user?.role;
     if (!userId) {
@@ -430,7 +432,8 @@ export const updateUser = async (req, res) => {
       web: "web",
       address: "address",
       pricePerHour: "pricePerHour",
-      companyName: "companyName"
+      companyName: "companyName",
+      experienceLevel:"experienceLevel"
     };
 
     const mappedData = {};
@@ -454,6 +457,7 @@ export const updateUser = async (req, res) => {
         "twitter",
         "web",
         "address",
+        "experienceLevel"
       ],
       client: [
         "userName",
@@ -482,7 +486,7 @@ export const updateUser = async (req, res) => {
       }
     }
 
-
+console.log(filteredData)
     await Model.findByIdAndUpdate(
       userId,
       { $set: filteredData },
@@ -502,6 +506,31 @@ export const updateUser = async (req, res) => {
     });
   }
 };
+
+export const updateResume = async(req,res)=>{
+  try {
+    const {userId} = req.user;
+    const resumePath = req.file?.path
+    if (!resumePath) {
+      return res.status(400).json({ message: "No resume uploaded" });
+    }
+     const updatedFreelancer = await Freelancer.findByIdAndUpdate(
+      userId,
+      { resume: resumePath },
+      { new: true } 
+    );
+    if (!updatedFreelancer) {
+      return res.status(404).json({ message: "Freelancer not found" });
+    }
+res.status(200).json({
+      message: "Resume updated",
+      status:true
+    });
+  } catch (error) {
+     console.error("Resume update error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
 
 export const updateFreelancerProfile = async (req, res) => {
   try {
@@ -800,5 +829,29 @@ export const changePassword = async (req, res) => {
     return res
       .status(500)
       .json({ status: false, message: "Internal server error" });
+  }
+};
+
+export const deleteResume = async (req, res) => {
+  try {
+    const {userId} = req.user;
+
+   const updatedFreelancer = await Freelancer.findByIdAndUpdate(
+      userId,
+      { resume: "" },
+      { new: true }
+    );
+
+    if (!updatedFreelancer) {
+      return res.status(404).json({ message: "Freelancer not found" });
+    }
+
+    return res.status(200).json({
+      message: "Resume field cleared successfully",
+      status: true,
+    });
+  } catch (error) {
+    console.error("Error clearing resume field:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };

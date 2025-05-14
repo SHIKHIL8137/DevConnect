@@ -1,5 +1,29 @@
 import mongoose from 'mongoose';
 
+const applicationSchema = new mongoose.Schema({
+  freelancerId: {
+    type: String,
+    required: true
+  },
+  freelancerName:{
+    type:String,
+    required : true
+  }
+  ,
+  status: {
+    type: String,
+    enum: ['applied','rejected', 'hired'],
+    default: 'applied'
+  },
+  appliedAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date
+  }
+});
+
 const projectSchema = new mongoose.Schema(
   {
     title: {
@@ -45,7 +69,7 @@ const projectSchema = new mongoose.Schema(
     },
 
     appliedUsers: {
-      type: [String], 
+      type: [applicationSchema], 
       default: [],
     },
 
@@ -58,7 +82,7 @@ const projectSchema = new mongoose.Schema(
       type:String,
     },
     freelancerId:{
-      type:String,
+      type:[String],
       default:[]
     }
   },
@@ -66,6 +90,7 @@ const projectSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
 
 export const Project =
   mongoose.models.Project || mongoose.model("Project", projectSchema);

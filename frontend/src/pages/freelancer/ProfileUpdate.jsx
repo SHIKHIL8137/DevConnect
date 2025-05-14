@@ -5,8 +5,21 @@ import {
   validateProfileForm,
   formatProfileData,
 } from "../../util/formValidate";
-import { Camera, X } from "lucide-react";
-import { ProfileImgUpdate, updateProfile } from "../../apis/userApi";
+import {
+  Camera,
+  FileUp,
+  X,
+  RefreshCw,
+  FileText,
+  Upload,
+  Check,
+} from "lucide-react";
+import {
+  ProfileImgUpdate,
+  removeResume,
+  updateProfile,
+  uploadResume,
+} from "../../apis/userApi";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserData } from "../../redux/thunk/userThunk";
@@ -21,15 +34,16 @@ const ProfileUpdate = () => {
     userName: "",
     email: "",
     position: "",
-    phoneNumber: 0,
+    phoneNumber: "",
     skills: "",
     about: "",
-    pricePerHour: 0,
+    pricePerHour: "",
     gitHub: "",
     linkedIn: "",
     twitter: "",
     web: "",
     address: "",
+    experienceLevel: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -39,7 +53,15 @@ const ProfileUpdate = () => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
-  const [loading, setLoading] = useState({ crop: false, update: false });
+  const [loading, setLoading] = useState({
+    crop: false,
+    update: false,
+    resume: false,
+  });
+  const [resume, setResume] = useState(null);
+  const [resumeFileName, setResumeFileName] = useState("");
+  const [dragActive, setDragActive] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,10 +81,15 @@ const ProfileUpdate = () => {
         twitter: user?.twitter || "",
         web: user?.web || "",
         address: user?.address || "",
+        experienceLevel: user?.experienceLevel || "",
       });
 
       if (user.profileImage) {
         setCroppedImage(user.profileImage);
+      }
+      if (user.resume) {
+        setResumeFileName("resume");
+        setResume(user.resume);
       }
     }
   }, [user]);
@@ -144,7 +171,7 @@ const ProfileUpdate = () => {
               toast.success(response.data.message);
             }
           } catch (error) {
-            console.log(error);
+            console.error(error);
             toast.error(
               error.response?.data?.message || "Something went wrong"
             );
@@ -155,8 +182,128 @@ const ProfileUpdate = () => {
       };
     } catch (error) {
       console.error("Error cropping image:", error);
-      console.log(error);
       toast.error(error.response?.data?.message || "Something went wrong");
+    }
+  };
+
+  // Added missing function for handling drag events
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      const validTypes = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ];
+
+      if (!validTypes.includes(file.type)) {
+        toast.error("Only PDF and DOC/DOCX files are allowed");
+        return;
+      }
+
+      setResume(file);
+      setResumeFileName(file.name);
+      handleResumeUpload(file);
+    }
+  };
+
+  const handleRemoveFile = async() => {
+    try {
+      const response = await removeResume();
+      if(!response.data.status)return toast.error(response.data.message);
+      setResume(null);
+    setResumeFileName("");
+    setUploadSuccess(false);
+    toast.success(response.data.message);
+    const result = await dispatch(fetchUserData());
+      if (fetchUserData.fulfilled.match(result)) {
+        if (response.data.resumeFileName) {
+          setResumeFileName(response.data.resumeFileName);
+        }
+      }
+    } catch (error) {
+       console.error("Error deleteing resume:", error);
+      toast.error(error.response?.data?.message || "Failed to deleting resume");
+    }
+    
+  };
+
+ const handleResumeSelect = (e) => {
+  if (e.target.files && e.target.files[0]) {
+    const file = e.target.files[0];
+    const validTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+
+    if (!validTypes.includes(file.type)) {
+      toast.error("Only PDF and DOC/DOCX files are allowed");
+      return;
+    }
+
+    if (file.size > maxSizeInBytes) {
+      toast.error("File size must be less than 5MB");
+      return;
+    }
+
+    setResume(file);
+    setResumeFileName(file.name);
+
+    handleResumeUpload(file);
+
+    if (errors.resume) {
+      setErrors((prev) => ({
+        ...prev,
+        resume: null,
+      }));
+    }
+  }
+};
+
+
+  const handleResumeUpload = async (file) => {
+    try {
+      const resumeFormData = new FormData();
+      resumeFormData.append("resume", file);
+
+      setLoading((val) => ({ ...val, resume: true }));
+      const response = await uploadResume(resumeFormData);
+
+      if (!response.data.status) {
+        return toast.error(response.data.message);
+      }
+
+      toast.success("Resume uploaded successfully");
+      setUploadSuccess(true);
+      const result = await dispatch(fetchUserData());
+      if (fetchUserData.fulfilled.match(result)) {
+        if (response.data.resumeFileName) {
+          setResumeFileName(response.data.resumeFileName);
+        }
+      }
+    } catch (error) {
+      console.error("Error uploading resume:", error);
+      toast.error(error.response?.data?.message || "Failed to upload resume");
+    } finally {
+      setLoading((val) => ({ ...val, resume: false }));
     }
   };
 
@@ -164,7 +311,6 @@ const ProfileUpdate = () => {
     const { errors, isValid } = validateProfileForm(formData);
     if (!isValid) {
       setErrors(errors);
-
       const firstError = Object.keys(errors)[0];
       const errorElement = document.getElementById(firstError);
       if (errorElement) {
@@ -187,15 +333,21 @@ const ProfileUpdate = () => {
         navigate("/freelancer/profile");
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       setLoading((val) => ({ ...val, update: false }));
     }
   };
 
+  const experienceLevels = [
+    { value: "", label: "Select Experience Level" },
+    { value: "entry", label: "Entry Level (0-2 years)" },
+    { value: "intermediate", label: "Intermediate (2-5 years)" },
+    { value: "expert", label: "Expert (5+ years)" },
+  ];
   return (
-    <div className="pt-8 w-full min-h-screen bg-gray-100 ">
+    <div className="pt-8 w-full min-h-screen bg-gray-100">
       <Navbar />
       <div className="w-full max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg my-10">
         <h1 className="text-2xl font-bold text-center mb-8">Profile Update</h1>
@@ -232,6 +384,125 @@ const ProfileUpdate = () => {
             </label>
           </div>
         </div>
+        <div className="mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Resume</h2>
+          <p className="text-gray-500 mb-4 text-sm">
+            Upload your resume to help employers learn about your experience
+          </p>
+
+          <div
+            className={`relative w-full p-6 border-2 border-dashed rounded-lg transition-all duration-300 ${
+              dragActive
+                ? "border-blue-400 bg-blue-50"
+                : resumeFileName
+                ? "border-green-200 bg-green-50"
+                : "border-gray-200 bg-gray-50"
+            } flex flex-col items-center justify-center min-h-40`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+          >
+            {loading.resume ? (
+              <div className="flex flex-col items-center justify-center py-4">
+                <RefreshCw
+                  size={36}
+                  className="text-blue-500 animate-spin mb-3"
+                />
+                <p className="text-gray-600 font-medium">Processing file...</p>
+              </div>
+            ) : resumeFileName ? (
+              <div className="w-full">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center">
+                    <div className="bg-blue-100 rounded-lg p-3 mr-3">
+                      <FileText size={24} className="text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-800 truncate max-w-xs">
+                        {resumeFileName}
+                      </p>
+                      <p className="text-xs text-gray-500">Added</p>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    <a
+                      href={resume}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 text-blue-600 hover:text-blue-800 transition-colors"
+                      title="Download"
+                    >
+                      <FileUp size={18} />
+                    </a>
+                    <button
+                      onClick={handleRemoveFile}
+                      className="p-2 text-gray-600 hover:text-red-600 transition-colors"
+                      title="Remove"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+                </div>
+                <div className="w-full h-1 bg-gray-200 rounded-full">
+                  <div className="h-1 bg-green-500 rounded-full w-full"></div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="bg-blue-100 rounded-full p-4 mb-4">
+                  <Upload size={28} className="text-blue-600" />
+                </div>
+                <p className="text-gray-700 font-medium mb-2">
+                  Drag and drop your resume here
+                </p>
+                <p className="text-gray-500 text-sm mb-4">or</p>
+                <label
+                  htmlFor="resume-file"
+                  className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer font-medium transition-colors flex items-center"
+                >
+                  Browse Files
+                </label>
+                <input
+                  type="file"
+                  id="resume-file"
+                  accept=".pdf,.doc,.docx"
+                  className="hidden"
+                  onChange={handleResumeSelect}
+                />
+                <p className="mt-4 text-xs text-gray-500">
+                  Accepted formats: PDF, DOC, DOCX (Max 5MB)
+                </p>
+              </>
+            )}
+
+            {dragActive && (
+              <div className="absolute inset-0 bg-blue-50 bg-opacity-80 flex items-center justify-center rounded-lg">
+                <div className="text-center">
+                  <Upload size={40} className="text-blue-500 mx-auto mb-2" />
+                  <p className="text-blue-700 font-medium">
+                    Drop your file here
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {errors.resume && (
+            <p className="mt-2 text-sm text-red-500 flex items-center">
+              <X size={16} className="mr-1" />
+              {errors.resume}
+            </p>
+          )}
+
+          {uploadSuccess && (
+            <p className="mt-2 text-sm text-green-600 flex items-center">
+              <Check size={16} className="mr-1" />
+              Resume uploaded successfully!
+            </p>
+          )}
+        </div>
 
         {showCropper && (
           <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
@@ -244,6 +515,7 @@ const ProfileUpdate = () => {
                     setImage(null);
                   }}
                   className="text-gray-500 hover:text-gray-700"
+                  type="button"
                 >
                   <X size={24} />
                 </button>
@@ -323,7 +595,7 @@ const ProfileUpdate = () => {
                   type="text"
                   id="userName"
                   name="userName"
-                  value={formData?.userName}
+                  value={formData?.userName || ""}
                   onChange={handleChange}
                   className={`w-full p-3 bg-gray-50 border ${
                     errors.userName ? "border-red-500" : "border-gray-200"
@@ -347,7 +619,7 @@ const ProfileUpdate = () => {
                   type="text"
                   id="position"
                   name="position"
-                  value={formData?.position}
+                  value={formData?.position || ""}
                   onChange={handleChange}
                   className={`w-full p-3 bg-gray-50 border ${
                     errors.position ? "border-red-500" : "border-gray-200"
@@ -356,6 +628,36 @@ const ProfileUpdate = () => {
                 />
                 {errors.position && (
                   <p className="mt-1 text-sm text-red-500">{errors.position}</p>
+                )}
+              </div>
+              <div>
+                <label
+                  htmlFor="experienceLevel"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Experience Level: <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="experienceLevel"
+                  name="experienceLevel"
+                  value={formData?.experienceLevel || ""}
+                  onChange={handleChange}
+                  className={`w-full p-3 bg-gray-50 border ${
+                    errors.experienceLevel
+                      ? "border-red-500"
+                      : "border-gray-200"
+                  } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition`}
+                >
+                  {experienceLevels.map((level) => (
+                    <option key={level.value} value={level.value}>
+                      {level.label}
+                    </option>
+                  ))}
+                </select>
+                {errors.experienceLevel && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.experienceLevel}
+                  </p>
                 )}
               </div>
 
@@ -370,7 +672,7 @@ const ProfileUpdate = () => {
                   type="email"
                   id="email"
                   name="email"
-                  value={formData?.email}
+                  value={formData?.email || ""}
                   onChange={handleChange}
                   className={`w-full p-3 bg-gray-50 border ${
                     errors.email ? "border-red-500" : "border-gray-200"
@@ -385,7 +687,7 @@ const ProfileUpdate = () => {
 
               <div>
                 <label
-                  htmlFor="phone"
+                  htmlFor="phoneNumber"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
                   Phone:
@@ -394,7 +696,7 @@ const ProfileUpdate = () => {
                   type="tel"
                   id="phoneNumber"
                   name="phoneNumber"
-                  value={formData?.phoneNumber}
+                  value={formData?.phoneNumber || ""}
                   onChange={handleChange}
                   className={`w-full p-3 bg-gray-50 border ${
                     errors.phoneNumber ? "border-red-500" : "border-gray-200"
@@ -419,7 +721,7 @@ const ProfileUpdate = () => {
                 <textarea
                   id="skills"
                   name="skills"
-                  value={formData?.skills}
+                  value={formData?.skills || ""}
                   onChange={handleChange}
                   rows="4"
                   className={`w-full p-3 bg-gray-50 border ${
@@ -448,7 +750,7 @@ const ProfileUpdate = () => {
                 <textarea
                   id="about"
                   name="about"
-                  value={formData?.about}
+                  value={formData?.about || ""}
                   onChange={handleChange}
                   rows="4"
                   className={`w-full p-3 bg-gray-50 border ${
@@ -472,7 +774,7 @@ const ProfileUpdate = () => {
                   type="text"
                   id="pricePerHour"
                   name="pricePerHour"
-                  value={formData?.pricePerHour}
+                  value={formData?.pricePerHour || ""}
                   onChange={handleChange}
                   className={`w-full p-3 bg-gray-50 border ${
                     errors.pricePerHour ? "border-red-500" : "border-gray-200"
@@ -497,7 +799,7 @@ const ProfileUpdate = () => {
                   type="text"
                   id="address"
                   name="address"
-                  value={formData?.address}
+                  value={formData?.address || ""}
                   onChange={handleChange}
                   className={`w-full p-3 bg-gray-50 border ${
                     errors.address ? "border-red-500" : "border-gray-200"
@@ -527,7 +829,7 @@ const ProfileUpdate = () => {
                   type="text"
                   id="gitHub"
                   name="gitHub"
-                  value={formData?.gitHub}
+                  value={formData?.gitHub || ""}
                   onChange={handleChange}
                   className={`w-full p-3 bg-gray-50 border ${
                     errors.gitHub ? "border-red-500" : "border-gray-200"
@@ -550,7 +852,7 @@ const ProfileUpdate = () => {
                   type="text"
                   id="linkedIn"
                   name="linkedIn"
-                  value={formData.linkedIn}
+                  value={formData?.linkedIn || ""}
                   onChange={handleChange}
                   className={`w-full p-3 bg-gray-50 border ${
                     errors.linkedIn ? "border-red-500" : "border-gray-200"
@@ -573,7 +875,7 @@ const ProfileUpdate = () => {
                   type="text"
                   id="twitter"
                   name="twitter"
-                  value={formData.twitter}
+                  value={formData?.twitter || ""}
                   onChange={handleChange}
                   className={`w-full p-3 bg-gray-50 border ${
                     errors.twitter ? "border-red-500" : "border-gray-200"
@@ -596,7 +898,7 @@ const ProfileUpdate = () => {
                   type="text"
                   id="web"
                   name="web"
-                  value={formData.web}
+                  value={formData?.web || ""}
                   onChange={handleChange}
                   className={`w-full p-3 bg-gray-50 border ${
                     errors.web ? "border-red-500" : "border-gray-200"

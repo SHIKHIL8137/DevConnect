@@ -16,6 +16,7 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
+  Clock3,
 } from "lucide-react";
 import Navbar from "../../components/user/navbar/navbar";
 import Footer from "../../components/user/footer/Footer";
@@ -27,9 +28,10 @@ import { verify } from "../../redux/slices/userSlice";
 import { toast } from "sonner";
 import dummy_profile_img from "../../assets/images/profile_dummy_img.png";
 import { verificationRequest } from "../../apis/verificationApi";
+import { fetchProjectOfUser } from "../../apis/projectApi";
 
 const Profile = () => {
-  const { user ,verification} = useSelector((state) => state.user);
+  const { user, verification } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const [image, setImage] = useState(null);
   const [croppedImage, setCroppedImage] = useState("");
@@ -39,11 +41,10 @@ const Profile = () => {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [loading, setLoading] = useState({ crop: false, verification: false });
   const navigate = useNavigate();
+  const [project, setProject] = useState([]);
 
-  // Get verification status from user object
   const verificationStatus = verification?.status || "incomplete";
-  
-  // Check if profile is complete
+
   const isProfileComplete = Boolean(
     user?.userName &&
       user?.email &&
@@ -52,6 +53,18 @@ const Profile = () => {
       user?.profileImage
   );
 
+  const fetch = async () => {
+    try {
+      const response = await fetchProjectOfUser();
+      if (!response.data.status) return toast.error(response.data.message);
+      console.log(response.data.project.length);
+      setProject(response.data.project);
+      console.log(project);
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
+  };
   const handleImageSelect = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -67,6 +80,10 @@ const Profile = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
   };
 
   const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
@@ -142,7 +159,7 @@ const Profile = () => {
       setLoading((val) => ({ ...val, verification: true }));
       const response = await verificationRequest({ userId: user._id });
       if (!response.data.status) return toast.error(response.data.message);
-      
+
       dispatch(verify(response.data.newRequestCreated));
       toast.success(response.data.message);
     } catch (error) {
@@ -153,8 +170,49 @@ const Profile = () => {
     }
   };
 
+  const getStatusConfig = (status) => {
+    switch (status) {
+      case "completed":
+        return {
+          bgColor: "bg-green-100",
+          textColor: "text-green-800",
+          icon: <CheckCircle size={14} className="mr-1" />,
+          borderColor: "border-green-500",
+        };
+      case "open":
+        return {
+          bgColor: "bg-blue-100",
+          textColor: "text-blue-800",
+          icon: <AlertCircle size={14} className="mr-1" />,
+          borderColor: "border-blue-500",
+        };
+      case "committed":
+        return {
+          bgColor: "bg-purple-100",
+          textColor: "text-purple-800",
+          icon: <Clock size={14} className="mr-1" />,
+          borderColor: "border-purple-500",
+        };
+      case "cancelled":
+        return {
+          bgColor: "bg-red-100",
+          textColor: "text-red-800",
+          icon: <XCircle size={14} className="mr-1" />,
+          borderColor: "border-red-500",
+        };
+      default:
+        return {
+          bgColor: "bg-gray-100",
+          textColor: "text-gray-800",
+          icon: null,
+          borderColor: "border-gray-500",
+        };
+    }
+  };
+
   useEffect(() => {
     setCroppedImage(user?.profileCoverImg);
+    fetch();
   }, [user?.profileCoverImg]);
 
   const renderVerificationBadge = () => {
@@ -440,35 +498,33 @@ const Profile = () => {
             </div>
           )}
 
-{verificationStatus === "rejected" && (
-  <div className="w-full mb-4">
-    {verification.message && (
-      <p className="text-red-600 text-sm mb-2 text-center">{verification.message}</p>
-    )}
+          {verificationStatus === "rejected" && (
+            <div className="w-full mb-4">
+              {verification.message && (
+                <p className="text-red-600 text-sm mb-2 text-center">
+                  {verification.message}
+                </p>
+              )}
 
-    <button
-      onClick={handleRequestVerification}
-      disabled={loading.verification}
-      className={`w-full font-medium cursor-pointer rounded-lg py-3 flex justify-center items-center ${
-        loading.verification
-          ? "bg-red-400 cursor-not-allowed"
-          : "bg-red-500 text-white"
-      }`}
-    >
-      {loading.verification ? (
-        <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
-      ) : (
-        "Re-Submit Verification"
-      )}
-    </button>
-  </div>
-)}
-
-
-          {verificationStatus === "verified" && (
-            <>
-            </>
+              <button
+                onClick={handleRequestVerification}
+                disabled={loading.verification}
+                className={`w-full font-medium cursor-pointer rounded-lg py-3 flex justify-center items-center ${
+                  loading.verification
+                    ? "bg-red-400 cursor-not-allowed"
+                    : "bg-red-500 text-white"
+                }`}
+              >
+                {loading.verification ? (
+                  <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+                ) : (
+                  "Re-Submit Verification"
+                )}
+              </button>
+            </div>
           )}
+
+          {verificationStatus === "verified" && <></>}
 
           <button
             className={`w-full font-medium cursor-pointer rounded-lg py-3 mb-4 flex items-center justify-center ${
@@ -503,47 +559,75 @@ const Profile = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-2xl font-bold mb-6">Recent Projects</h3>
-
-            {verificationStatus === "verified" ? (
-              <div className="space-y-6 flex justify-center items-center">
-                <p>No Projects</p>
+          <div className="bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-lg p-6  border border-blue-100">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                <div className="w-2 h-8 bg-blue-500 rounded mr-3"></div>
+                Recent Projects
+              </h2>
+              <div className="bg-blue-100 text-blue-600 rounded-full px-4 py-1 text-sm font-medium">
+                {project.length} Projects
               </div>
-            ) : (
-              <div className="py-8 text-center">
-                <div className="inline-flex bg-gray-100 p-4 rounded-full mb-4">
-                  <AlertCircle size={32} className="text-gray-500" />
-                </div>
-                <h4 className="text-lg font-semibold mb-2">
-                  Profile Not Verified
-                </h4>
-                <p className="text-gray-600 mb-4">
-                  {verificationStatus === "incomplete"
-                    ? "Complete your profile and request verification to create and manage projects"
-                    : verificationStatus === "pending"
-                    ? "Your verification is pending admin approval"
-                    : "Your verification was rejected. Please resubmit."}
-                </p>
-                {verificationStatus === "incomplete" && (
-                  <button
-                    onClick={() => navigate("/client/profileUpdate")}
-                    className="bg-blue-500 text-white px-6 py-2 rounded-lg cursor-pointer font-medium"
+            </div>
+            <div className="space-y-6">
+              {project.slice(0, 5).map((project) => {
+                const statusConfig = getStatusConfig(project.completionStatus);
+
+                return (
+                  <div
+                    key={project._id}
+                    className={`bg-white rounded-lg p-5 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:-translate-y-1`}
+                    onClick={() =>
+                      navigate(`/client/projectDetails?id=${project._id}`)
+                    }
                   >
-                    Complete Profile
-                  </button>
-                )}
-              </div>
-            )}
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-xl font-semibold text-gray-800">
+                        {project.title}
+                      </h3>
+                      <div
+                        className={`px-4 py-1 rounded-full text-sm font-medium flex items-center ${statusConfig.bgColor} ${statusConfig.textColor}`}
+                      >
+                        {statusConfig.icon}
+                        {capitalizeFirstLetter(project.completionStatus)}
+                      </div>
+                    </div>
 
-            {verificationStatus === "verified" && (
-              <div className="mt-6 text-blue-500 flex items-center justify-end">
-                <a href="#" className="flex items-center">
-                  View all projects
-                  <ChevronRight size={16} className="ml-1" />
-                </a>
-              </div>
-            )}
+                    <p className="text-gray-600 mt-2">{project.description}</p>
+
+                    <div className="mt-4 flex justify-between items-center">
+                      <div className="flex space-x-4">
+                        <div className="flex items-center text-gray-500 text-sm">
+                          <Calendar size={14} className="mr-1" />
+                          {
+                            new Date(project.createdAt)
+                              .toISOString()
+                              .split("T")[0]
+                          }
+                        </div>
+                        <div className="flex items-center text-gray-500 text-sm">
+                          <Clock size={14} className="mr-1" />
+                          {project.timeline} days
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-8 flex justify-center">
+              <p
+                className="group flex items-center bg-blue-500 hover:bg-blue-600 text-white py-2 px-6 rounded-full font-medium transition-all duration-300 shadow-md hover:shadow-lg"
+                onClick={() => navigate("/client/allProject")}
+              >
+                View all projects
+                <ChevronRight
+                  size={18}
+                  className="ml-1 group-hover:ml-2 transition-all duration-300"
+                />
+              </p>
+            </div>
           </div>
         </div>
       </div>

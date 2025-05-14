@@ -2,16 +2,22 @@
 import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import cloudinary from "./cloudinary.js";
-import path from "path";
 
 const fileStorage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
-    const ext = path.extname(file.originalname).replace('.', '');
+    const mimeToFormat = {
+      'application/pdf': 'pdf',
+      'application/msword': 'doc',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+      'application/zip': 'zip',
+      'application/x-zip-compressed': 'zip',
+    };
+    const format = mimeToFormat[file.mimetype] || 'pdf';
     return {
       folder: "project-files",
-      resource_type: "raw", 
-      format: ext || 'pdf',
+      resource_type: "auto", 
+      format,
       public_id: `file_${Date.now()}`,
     };
   },
@@ -32,6 +38,8 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const fileUpload = multer({ storage: fileStorage, fileFilter });
+
+
+const fileUpload = multer({ storage: fileStorage, fileFilter,limits: { fileSize: 10 * 1024 * 1024 }, });
 
 export default fileUpload;

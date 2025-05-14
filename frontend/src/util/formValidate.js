@@ -1,6 +1,6 @@
-
 export const validateProfileForm = (formData) => {
   const errors = {};
+
 
   if (!formData.userName || !formData.userName.trim()) {
     errors.userName = "Username is required";
@@ -8,13 +8,17 @@ export const validateProfileForm = (formData) => {
     errors.userName = "Username must be at least 3 characters";
   }
 
+ 
   if (!formData.position || !formData.position.trim()) {
-    errors.position = "position is required";
+    errors.position = "Position is required";
   } else if (formData.position.trim().length < 3) {
-    errors.position = "position must be at least 3 characters";
+    errors.position = "Position must be at least 3 characters";
   }
 
- 
+  if (!formData.experienceLevel || !formData.experienceLevel.trim()) {
+    errors.experienceLevel = "Experience is required";
+  }
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!formData.email || !formData.email.trim()) {
     errors.email = "Email is required";
@@ -24,10 +28,16 @@ export const validateProfileForm = (formData) => {
 
 
   const phoneRegex = /^\+?[0-9\s\-()]{8,20}$/;
-  if (formData.phoneNumber && !phoneRegex.test(formData.phoneNumber)) {
+  if (!formData.phoneNumber || !formData.phoneNumber.toString().trim()) {
+    errors.phoneNumber = "Phone number is required";
+  } else if (!phoneRegex.test(formData.phoneNumber)) {
     errors.phoneNumber = "Please enter a valid phone number";
   }
 
+
+  if (!formData.address || !formData.address.trim()) {
+    errors.address = "Address is required";
+  }
 
   if (typeof formData.skills === 'string') {
     const skillsArray = formData.skills
@@ -48,11 +58,14 @@ export const validateProfileForm = (formData) => {
     errors.about = "About section should be at least 20 characters";
   }
 
-
-  if (formData.pricePerHour && isNaN(Number(formData.pricePerHour))) {
+  // Price
+  if (!formData.pricePerHour || !formData.pricePerHour.toString().trim()) {
+    errors.pricePerHour = "Price per hour is required";
+  } else if (isNaN(Number(formData.pricePerHour))) {
     errors.pricePerHour = "Price must be numeric";
   }
 
+  // Optional URLs
   const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i;
 
   if (formData.gitHub && !urlRegex.test(formData.gitHub)) {
@@ -73,6 +86,7 @@ export const validateProfileForm = (formData) => {
     isValid: Object.keys(errors).length === 0
   };
 };
+
 
 export const formatProfileData = (formData) => {
   const formatted = { ...formData };

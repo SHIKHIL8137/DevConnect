@@ -35,6 +35,14 @@ const freelancerSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    experienceLevel: {
+  type: String,
+  enum: ["entry", "intermediate", "expert"],
+  default: ""
+},resume:{
+type : String,
+default :""
+},
     block: { type: Boolean, default: false },
   },
   { timestamps: true }

@@ -16,6 +16,9 @@ export const userProxy = proxy(process.env.USER_SERVICE_URL, {
   },
 });
 
+
+
+
 export const adminProxy = proxy(process.env.ADMIN_SERVICE_URL, {
   proxyReqPathResolver: (req) => req.originalUrl.replace("/admin", ""),
   proxyReqBodyDecorator: (body, req) => {

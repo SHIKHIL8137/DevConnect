@@ -27,9 +27,11 @@ import AdminLogin from "./pages/admin/login";
 import DevConnectDashboard from "./pages/admin/DashBoard";
 import { fetchAdminData } from "./redux/thunk/adminThunk";
 import ProfileCompletionModal from "./components/user/modals/profileCompletionModal";
-import ClientVerificationTable from "./components/admin/clientVerificationTable";
-import ClientVerificationDetail from "./components/admin/clientVerificationDetails";
+import ProjectDetailsFreelancer from "./pages/freelancer/ProjectDetails";
 import AddProjectForm from "./pages/client/addProject";
+import AllProjects from "./pages/client/AllProjects";
+import ProjectDetails from "./pages/client/ProjectDetails";
+import FreelancerPorfile from "./pages/client/freelancerProfile";
 
 function App() {
   const dispatch = useDispatch();
@@ -177,7 +179,46 @@ function App() {
             </AdminProtectedRoute>
           }
         />
-       <Route path="/client/addProject" element={<AddProjectForm/>}/>
+        <Route
+          path="/client/addProject"
+          element={
+            <ProtectedRoute>
+              <AddProjectForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/client/allProject"
+          element={
+            <ProtectedRoute>
+              <AllProjects />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/client/projectDetails"
+          element={
+            <ProtectedRoute>
+              <ProjectDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/client/freelancerProfile"
+          element={
+            <ProtectedRoute>
+              <FreelancerPorfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/freelancer/projectDetails"
+          element={
+            <ProtectedRoute>
+              <ProjectDetailsFreelancer />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
       {user?.role === "freelancer" && showModal && (
         <ProfileCompletionModal closeModal={() => setShowModal(false)} />

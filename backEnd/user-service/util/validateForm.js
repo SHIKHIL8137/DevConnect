@@ -23,6 +23,13 @@ export const validateProfileUpdate = (data, role) => {
       validData.phoneNumber = data.phoneNumber;
     }
   }
+  if (!data.experienceLevel || !data.experienceLevel.trim()) {
+  errors.experienceLevel = "Experience is required";
+} else {
+  validData.experienceLevel = data.experienceLevel;
+}
+
+
 
   if (data.address !== "") {
     if (!data.address || validator.isEmpty(data.address.trim())) {

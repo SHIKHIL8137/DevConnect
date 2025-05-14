@@ -122,11 +122,11 @@ const navigate = useNavigate()
       formDataToSend.append('timeline', formData.timeline);
       formDataToSend.append('budget', formData.budget);
       formDataToSend.append('referralLink', formData.referralLink);
-      
+    
       formData.attachments.forEach(file => {
         formDataToSend.append('attachments', file);
       });
-      console.log(formDataToSend)
+      
       const response = await addProject(formDataToSend);
 
       if(!response.data.status){
@@ -328,7 +328,7 @@ const navigate = useNavigate()
                           name="file-upload" 
                           type="file" 
                           multiple 
-                          className="sr-only" 
+                          className="sr-only cursor-pointer" 
                           onChange={handleFileChange}
                         />
                       </label>
@@ -357,7 +357,7 @@ const navigate = useNavigate()
                         <button
                           type="button"
                           onClick={() => removeAttachment(index)}
-                          className="text-red-500 hover:text-red-700"
+                          className="text-red-500 cursor-pointer hover:text-red-700"
                         >
                           &times;
                         </button>
@@ -371,14 +371,14 @@ const navigate = useNavigate()
                 <button
                   type="button"
                   onClick={()=>navigate('/client/profile')}
-                  className="px-6 py-2 border border-gray-300 shadow-sm text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200"
+                  className="px-6 cursor-pointer py-2 border border-gray-300 shadow-sm text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`px-6 py-2 border border-transparent text-base font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-md transition duration-200 ${
+                  className={`px-6 py-2 cursor-pointer border-transparent text-base font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-md transition duration-200 ${
                     isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
                   }`}
                 >

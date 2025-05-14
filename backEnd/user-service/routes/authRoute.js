@@ -11,11 +11,14 @@ import {
   forgetPassword,
   changePassword,
   updateFreelancerProfile,
+  updateResume,
+  deleteResume,
 } from "../controllers/authController.js";
 import { generateToken } from "../../shared/auth/config/jwt.js";
 import passport from "passport";
 import { jwtAuthMiddleware } from "../../shared/auth/middleWares/jwtTokenVerify.js";
 import upload from "../../shared/auth/config/multer.js";
+import fileUpload from "../../shared/auth/config/fileUpload.js";
 
 const route = express.Router();
 
@@ -47,6 +50,7 @@ route.get("/auth/google/callback", (req, res, next) => {
     }
 
     const token = generateToken({
+      userName:user.userName,
       userId: user._id,
       role: user.role,
       email: user.email,
@@ -76,5 +80,7 @@ route.post(
 route.post("/forgetPassword", forgetPassword);
 route.patch("/validateUserChangPswd", changePassword);
 route.patch("/updateFreelancer", jwtAuthMiddleware, updateFreelancerProfile);
+route.patch('/updateResume',jwtAuthMiddleware,fileUpload.single('resume'),updateResume)
+route.delete('/deleteResume',jwtAuthMiddleware,deleteResume)
 
 export default route;
