@@ -23,13 +23,6 @@ export const validateProfileUpdate = (data, role) => {
       validData.phoneNumber = data.phoneNumber;
     }
   }
-  if (!data.experienceLevel || !data.experienceLevel.trim()) {
-  errors.experienceLevel = "Experience is required";
-} else {
-  validData.experienceLevel = data.experienceLevel;
-}
-
-
 
   if (data.address !== "") {
     if (!data.address || validator.isEmpty(data.address.trim())) {
@@ -63,6 +56,12 @@ export const validateProfileUpdate = (data, role) => {
       errors.position = "position is required";
     } else {
       validData.position = data.position.trim();
+    }
+
+    if (!data.experienceLevel || !data.experienceLevel.trim()) {
+      errors.experienceLevel = "Experience is required";
+    } else {
+      validData.experienceLevel = data.experienceLevel;
     }
 
     if (!Array.isArray(data.skills) || data.skills.length === 0) {

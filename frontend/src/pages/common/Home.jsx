@@ -13,6 +13,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import RecentlyPostedWorks from "../../components/common/HomeProjectCard";
+import PortfolioSlider from "../../components/common/HomeFreelancerCard";
 
 const Home = () => {
   const [activeSlide, setActiveSlide] = useState(0);
@@ -38,43 +40,10 @@ const Home = () => {
     },
   ];
 
-  const nextSlide = () => {
-    setActiveSlide((prev) => (prev === portfolios.length - 1 ? 0 : prev + 1));
-  };
-
-  const prevSlide = () => {
-    setActiveSlide((prev) => (prev === 0 ? portfolios.length - 1 : prev - 1));
-  };
-
   const goToSlide = (index) => {
     setActiveSlide(index);
   };
-  const works = [
-    {
-      id: 1,
-      title: "UIVerse Studio",
-      description: "Custom UI designs for websites and portfolios.",
-      highestBid: 500,
-      icon: "M",
-      iconColor: "bg-gradient-to-r from-blue-400 to-blue-500",
-    },
-    {
-      id: 2,
-      title: "TechMatch Hub",
-      description: "Client-dev job board with secure payments.",
-      highestBid: 500,
-      icon: "C",
-      iconColor: "bg-gradient-to-r from-blue-400 to-cyan-400",
-    },
-    {
-      id: 3,
-      title: "QuickCart Pro",
-      description: "Single-vendor shop with cart and checkout.",
-      highestBid: 300,
-      icon: <TrendingUp className="w-6 h-6 text-white" />,
-      iconColor: "bg-gradient-to-r from-blue-400 to-blue-500",
-    },
-  ];
+
   return (
     <>
       <section className="bg-blue-50 min-h-screen flex-row items-center md:pt-4">
@@ -185,76 +154,10 @@ const Home = () => {
         </div>
       </section>
       <section className="w-full px-12 py-12 md:py-16 bg-white">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="flex justify-between items-end mb-8">
-            <div>
-              <h2 className="text-gray-400 text-xl mb-2">
-                The latest freelance work!
-              </h2>
-              <div className="text-3xl md:text-4xl font-bold">
-                <span className="text-gray-800">Recently Posted</span>
-                <span className="text-blue-500"> Works</span>
-              </div>
-            </div>
-
-            <div className="flex space-x-3">
-              <button className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-100">
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <button className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white hover:bg-blue-600">
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {works.map((work) => (
-              <div
-                key={work.id}
-                className="rounded-lg border border-gray-100 shadow-sm p-6 hover:shadow-md transition-shadow"
-              >
-                <div className="mb-4">
-                  {typeof work.icon === "string" ? (
-                    <div
-                      className={`w-14 h-14 rounded-md ${work.iconColor} flex items-center justify-center text-white text-2xl font-bold`}
-                    >
-                      {work.icon}
-                    </div>
-                  ) : (
-                    <div
-                      className={`w-14 h-14 rounded-md ${work.iconColor} flex items-center justify-center`}
-                    >
-                      {work.icon}
-                    </div>
-                  )}
-                </div>
-
-                <h3 className="text-xl font-bold text-gray-800 mb-2">
-                  {work.title}
-                </h3>
-                <p className="text-gray-500 mb-6">{work.description}</p>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-500 text-sm">Highest bid</p>
-                    <p className="text-2xl font-bold text-gray-800">
-                      ${work.highestBid}
-                    </p>
-                  </div>
-                  <a
-                    href="#"
-                    className="text-blue-500 font-medium hover:underline"
-                  >
-                    Apply now
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <RecentlyPostedWorks/>
       </section>
       <section className="py-16 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4">
+        {/* <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
             <p className="text-gray-400 text-xl mb-2">
               Logos, websites, book covers & more!
@@ -303,7 +206,8 @@ const Home = () => {
               />
             ))}
           </div>
-        </div>
+        </div> */}
+        <PortfolioSlider/>
       </section>
       <Footer />
     </>

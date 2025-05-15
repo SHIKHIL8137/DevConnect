@@ -6,8 +6,8 @@ const clientSchema = new mongoose.Schema(
     googleId: { type: String },
     userName: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
-    lastLogin:{
-      type:Date,
+    lastLogin: {
+      type: Date,
     },
     password: { type: String },
     role: {

@@ -45,7 +45,6 @@ const SignUp = () => {
   const role = queryParams.get("role") || "freelancer";
 
   const isFreelancer = role === "freelancer";
-  const isClient = role === "client";
 
   useEffect(() => {
     let timer;

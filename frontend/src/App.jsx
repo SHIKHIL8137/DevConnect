@@ -32,6 +32,7 @@ import AddProjectForm from "./pages/client/addProject";
 import AllProjects from "./pages/client/AllProjects";
 import ProjectDetails from "./pages/client/ProjectDetails";
 import FreelancerPorfile from "./pages/client/freelancerProfile";
+import EditProjectForm from "./pages/client/editProject";
 
 function App() {
   const dispatch = useDispatch();
@@ -200,6 +201,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ProjectDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/client/editProject"
+          element={
+            <ProtectedRoute>
+              <EditProjectForm />
             </ProtectedRoute>
           }
         />

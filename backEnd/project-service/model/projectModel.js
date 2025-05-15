@@ -1,27 +1,26 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const applicationSchema = new mongoose.Schema({
   freelancerId: {
     type: String,
-    required: true
+    required: true,
   },
-  freelancerName:{
-    type:String,
-    required : true
-  }
-  ,
+  freelancerName: {
+    type: String,
+    required: true,
+  },
   status: {
     type: String,
-    enum: ['applied','rejected', 'hired'],
-    default: 'applied'
+    enum: ["applied", "rejected", "hired"],
+    default: "applied",
   },
   appliedAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   updatedAt: {
-    type: Date
-  }
+    type: Date,
+  },
 });
 
 const projectSchema = new mongoose.Schema(
@@ -39,7 +38,7 @@ const projectSchema = new mongoose.Schema(
     },
 
     features: {
-      type: String, 
+      type: String,
       default: "",
     },
 
@@ -49,7 +48,7 @@ const projectSchema = new mongoose.Schema(
     },
 
     timeline: {
-      type: Number, 
+      type: Number,
       required: true,
     },
 
@@ -64,33 +63,32 @@ const projectSchema = new mongoose.Schema(
     },
 
     attachments: {
-      type: [String], 
+      type: [String],
       default: [],
     },
 
     appliedUsers: {
-      type: [applicationSchema], 
+      type: [applicationSchema],
       default: [],
     },
 
     completionStatus: {
       type: String,
-      enum: ['open', 'committed', 'completed', 'cancelled'],
+      enum: ["open", "committed", "completed", "cancelled"],
       default: "open",
     },
-    clientId:{
-      type:String,
+    clientId: {
+      type: String,
     },
-    freelancerId:{
-      type:[String],
-      default:[]
-    }
+    freelancerId: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,
   }
 );
-
 
 export const Project =
   mongoose.models.Project || mongoose.model("Project", projectSchema);

@@ -7,10 +7,9 @@ import { connectDB } from "./config/db.js";
 import session from "express-session";
 import cookieParser from "cookie-parser";
 import adminServiceRoute from "./routes/adminRoute.js";
-import verificationServiceRoute from './routes/verificationRoute.js'
-import commonRoute from './routes/commonRoute.js'
-import projectRoute from './routes/projectRoute.js'
-
+import verificationServiceRoute from "./routes/verificationRoute.js";
+import commonRoute from "./routes/commonRoute.js";
+import projectRoute from "./routes/projectRoute.js";
 
 dotenv.config();
 
@@ -44,11 +43,9 @@ app.use(passport.session());
 
 app.use("/", authRoute);
 app.use("/adminService", adminServiceRoute);
-app.use('/verificationService',verificationServiceRoute);
-app.use('/commonData',commonRoute)
-app.use('/projectService',projectRoute)
-
-
+app.use("/verificationService", verificationServiceRoute);
+app.use("/commonData",commonRoute);
+app.use("/projectService", projectRoute);
 
 connectDB();
 

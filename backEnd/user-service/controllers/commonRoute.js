@@ -1,8 +1,8 @@
-import { Project } from "../../project-service/model/projectModel.js";
 import Freelancer from "../model/user/freelancerModel.js";
 
 export const clientHomeData = async (req, res) => {
   try {
+    console.log(req.query);
     const {
       search = "",
       location,
@@ -15,6 +15,7 @@ export const clientHomeData = async (req, res) => {
       limit = 10,
       sortBy,
       sortOrder,
+      experienceLevel,
     } = req.query;
 
     const query = {};
@@ -32,6 +33,15 @@ export const clientHomeData = async (req, res) => {
       query.skills = { $in: skillArray };
     }
 
+    if (experienceLevel) {
+      if (experienceLevel.includes(",")) {
+        const experienceLevels = experienceLevel.split(",");
+        query.experienceLevel = { $in: experienceLevels };
+      } else {
+        query.experienceLevel = experienceLevel;
+      }
+    }
+
     if (minPrice || maxPrice) {
       query.pricePerHour = {};
       if (minPrice) query.pricePerHour.$gte = parseFloat(minPrice);
@@ -46,6 +56,9 @@ export const clientHomeData = async (req, res) => {
       sortOptions.userName = sortOrder === "desc" ? -1 : 1;
     } else if (sortBy === "pricePerHour") {
       sortOptions.pricePerHour = sortOrder === "desc" ? -1 : 1;
+    } else if (sortBy === "experienceLevel") {
+      const experienceLevelOrder = { expert: 3, intermediate: 2, entry: 1 };
+      sortOptions.experienceLevel = sortOrder === "desc" ? -1 : 1;
     }
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
@@ -68,15 +81,23 @@ export const clientHomeData = async (req, res) => {
   }
 };
 
-
-
-export const freelancerProfile = async(req,res)=>{
+export const freelancerProfile = async (req, res) => {
   try {
-    const {id} = req.query;
+    const { id } = req.query;
     const user = await Freelancer.findById(id);
-    res.status(200).json({status:true,user});
+    res.status(200).json({ status: true, user });
   } catch (error) {
     console.error("Error in clientHomeData:", error);
     res.status(500).json({ message: "Server Error" });
   }
-}
+};
+
+export const freelancersDataHome = async (req, res) => {
+  try {
+    const freelancers = await Freelancer.find().select('-password').limit(10);
+    res.status(200).json({ status: true, freelancers });
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ status: false, message: 'Server Error', error: error.message });
+  }
+};

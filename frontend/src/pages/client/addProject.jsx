@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Calendar, Paperclip, DollarSign, Clock, Link2, AlertCircle } from 'lucide-react';
 import Navbar from '../../components/user/navbar/navbar';
 import Footer from '../../components/user/footer/Footer';
-import axios from 'axios';
 import { addProject } from '../../apis/projectApi';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -44,15 +43,15 @@ const navigate = useNavigate()
       newErrors.budget = 'Budget must be greater than 0';
     }
     
-    // URL validation for referral link if provided
+
     if (formData.referralLink && !isValidUrl(formData.referralLink)) {
       newErrors.referralLink = 'Please enter a valid URL';
     }
     
-    // File validation
+
     if (formData.attachments.length > 0) {
       const invalidFiles = formData.attachments.filter(file => {
-        const fileSize = file.size / 1024 / 1024; // Convert to MB
+        const fileSize = file.size / 1024 / 1024; 
         const validExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'];
         const fileExt = file.name.split('.').pop().toLowerCase();
         
@@ -81,7 +80,7 @@ const navigate = useNavigate()
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
-    // Clear error for this field when user starts typing
+
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -91,7 +90,7 @@ const navigate = useNavigate()
     const files = Array.from(e.target.files);
     setFormData(prev => ({ ...prev, attachments: [...prev.attachments, ...files] }));
     
-    // Clear attachments error when new files are selected
+
     if (errors.attachments) {
       setErrors(prev => ({ ...prev, attachments: '' }));
     }
@@ -163,7 +162,7 @@ const navigate = useNavigate()
     <div className="pt-8 w-full min-h-screen bg-gray-100">
       <Navbar />
       <div className="flex flex-col py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-full mx-20">
           <div className="bg-white rounded-xl shadow-xl overflow-hidden">
             <div className="px-6 py-4">
               <h2 className="text-2xl font-medium text-black text-center">New Project</h2>
@@ -268,7 +267,7 @@ const navigate = useNavigate()
                 
                 <div>
                   <label htmlFor="budget" className="block text-sm font-medium text-gray-700">
-                    Budget ($) <span className="text-red-500">*</span>
+                    Budget (₹) <span className="text-red-500">*</span>
                   </label>
                   <div className="mt-1 relative rounded-lg shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

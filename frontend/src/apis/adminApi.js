@@ -33,15 +33,26 @@ export const blockUser = (userId) => {
   return axiosInstance.patch(`/admin/common/blockUser?userId=${userId}`);
 };
 
-export const getVerificationRequests = (page)=>{
-  return axiosInstance.get(`/admin/client/verificationData?page=${page}`)
-}
+export const getVerificationRequests = (page) => {
+  return axiosInstance.get(`/admin/client/verificationData?page=${page}`);
+};
 
+export const getClientVerificationDetails = (userId) => {
+  return axiosInstance.get(
+    `/admin/client/clientVerificationData?id=${userId}`,
+    { withCredentials: true }
+  );
+};
 
-export const getClientVerificationDetails =(userId)=>{
-  return axiosInstance.get(`/admin/client/clientVerificationData?id=${userId}`,{withCredentials:true});
-}
+export const verifyOrRejectUser = (formData) => {
+  return axiosInstance.post(`/admin/client/verifyOrRejectUser`, formData, {
+    withCredentials: true,
+  });
+};
 
-export const verifyOrRejectUser =(formData)=>{
-  return axiosInstance.post(`/admin/client/verifyOrRejectUser`,formData,{withCredentials:true})
-}
+export const fetchProjects = (page, prefix) => {
+  return axiosInstance.get(
+    `/admin/project/projects?page=${page}&search=${prefix}`,
+    { withCredentials: true }
+  );
+};

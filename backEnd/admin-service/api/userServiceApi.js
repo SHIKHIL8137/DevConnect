@@ -23,12 +23,16 @@ export const updataBlockStatus = (userId) => {
   );
 };
 
-export const getClientsDatas = (fromData)=>{
+export const getClientsDatas = (fromData) => {
   return axiosInstance.post(
-    '/user/adminService/getClientData',{users:fromData},{ withCredentials: true }
-  )
-}
+    "/user/adminService/getClientData",
+    { users: fromData },
+    { withCredentials: true }
+  );
+};
 
-export const fetchClientData = (id)=>{
-  return axiosInstance.get(`/user/adminService/getClient?id=${id}`,{withCredentials:true})
-}
+export const fetchClientData = (id) => {
+  return axiosInstance.get(`/user/adminService/getClient?id=${id}`, {
+    withCredentials: true,
+  });
+};

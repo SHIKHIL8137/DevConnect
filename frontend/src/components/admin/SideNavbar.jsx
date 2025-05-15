@@ -63,12 +63,12 @@ const SideNavbar = ({
         </div>
       ),
     },
-     {
+    {
       id: "clientVerification",
       label: "clientVerification",
       icon: (
         <div className="p-2">
-          <ShieldCheck  className="h-5 w-5 text-blue-300" />
+          <ShieldCheck className="h-5 w-5 text-blue-300" />
         </div>
       ),
     },

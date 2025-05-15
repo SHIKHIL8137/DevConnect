@@ -4,7 +4,7 @@ const freelancerSchema = new mongoose.Schema(
   {
     userId: { type: String, required: true, unique: true },
     googleId: { type: String },
-    position:{type : String},
+    position: { type: String },
     userName: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String },
@@ -36,13 +36,13 @@ const freelancerSchema = new mongoose.Schema(
       default: [],
     },
     experienceLevel: {
-  type: String,
-  enum: ["entry", "intermediate", "expert"],
-  default: ""
-},resume:{
-type : String,
-default :""
-},
+      type: String,
+      enum: ["entry", "intermediate", "expert"],
+    },
+    resume: {
+      type: String,
+      default: "",
+    },
     block: { type: Boolean, default: false },
   },
   { timestamps: true }

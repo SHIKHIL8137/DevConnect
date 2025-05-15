@@ -30,7 +30,7 @@ const userSlice = createSlice({
     builder.addCase(verificationUser.fulfilled,(state,action)=>{
       state.verification = action.payload
     });
-    builder.addCase(verificationUser.rejected,(state,action)=>{
+    builder.addCase(verificationUser.rejected,(state)=>{
       state.verification = null
     });
   },

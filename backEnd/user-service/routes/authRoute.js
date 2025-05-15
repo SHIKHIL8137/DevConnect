@@ -42,7 +42,7 @@ route.get("/auth/google/callback", (req, res, next) => {
         `${process.env.FRONTEND_URL}/logIn?error=user_blocked`
       );
     }
-    console.log(err,user)
+    console.log(err, user);
     if (err || !user) {
       return res.redirect(
         `${process.env.FRONTEND_URL}/signUp?error=auth_failed`
@@ -50,7 +50,7 @@ route.get("/auth/google/callback", (req, res, next) => {
     }
 
     const token = generateToken({
-      userName:user.userName,
+      userName: user.userName,
       userId: user._id,
       role: user.role,
       email: user.email,
@@ -80,7 +80,12 @@ route.post(
 route.post("/forgetPassword", forgetPassword);
 route.patch("/validateUserChangPswd", changePassword);
 route.patch("/updateFreelancer", jwtAuthMiddleware, updateFreelancerProfile);
-route.patch('/updateResume',jwtAuthMiddleware,fileUpload.single('resume'),updateResume)
-route.delete('/deleteResume',jwtAuthMiddleware,deleteResume)
+route.patch(
+  "/updateResume",
+  jwtAuthMiddleware,
+  fileUpload.single("resume"),
+  updateResume
+);
+route.delete("/deleteResume", jwtAuthMiddleware, deleteResume);
 
 export default route;

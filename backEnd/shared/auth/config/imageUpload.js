@@ -1,6 +1,5 @@
 import cloudinary from "./cloudinary";
 
-
 export const uploadToCloudinary = async (fileBuffer, folder) => {
   return await cloudinary.uploader.upload_stream(
     {

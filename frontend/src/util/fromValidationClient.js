@@ -24,22 +24,31 @@ export const validateProfileForm = (formData) => {
 
 
   const phoneRegex = /^\+?[0-9\s\-()]{8,20}$/;
-  if (formData.phoneNumber && !phoneRegex.test(formData.phoneNumber)) {
+  if (!formData.phoneNumber || !formData.phoneNumber.toString().trim()) {
+    errors.phoneNumber = "Phone number is required";
+  } else if (!phoneRegex.test(formData.phoneNumber)) {
     errors.phoneNumber = "Please enter a valid phone number";
   }
 
   const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i;
 
-  if (formData.linkedIn && !urlRegex.test(formData.linkedIn)) {
+ if (!formData.linkedIn || !formData.linkedIn.trim()) {
+    errors.linkedIn = "LinkedIn URL is required";
+  } else if (!urlRegex.test(formData.linkedIn)) {
     errors.linkedIn = "Please enter a valid LinkedIn URL";
   }
-  if (formData.twitter && !urlRegex.test(formData.twitter)) {
+
+  if (!formData.twitter || !formData.twitter.trim()) {
+    errors.twitter = "Twitter URL is required";
+  } else if (!urlRegex.test(formData.twitter)) {
     errors.twitter = "Please enter a valid Twitter URL";
   }
-  if (formData.web && !urlRegex.test(formData.web)) {
+
+  if (!formData.web || !formData.web.trim()) {
+    errors.web = "Website URL is required";
+  } else if (!urlRegex.test(formData.web)) {
     errors.web = "Please enter a valid website URL";
   }
-
   return {
     errors,
     isValid: Object.keys(errors).length === 0

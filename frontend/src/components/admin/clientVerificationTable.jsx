@@ -1,4 +1,11 @@
-import { ChevronLeft, ChevronRight, Search, ExternalLink, CheckCircle, XCircle } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  ExternalLink,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getVerificationRequests } from "../../apis/adminApi";
@@ -36,13 +43,11 @@ const ClientVerificationTable = ({ onReviewClick }) => {
     setPage(1);
   };
 
-
   const formatDate = (dateStr) => {
     if (!dateStr) return "N/A";
     const options = { year: "numeric", month: "short", day: "numeric" };
     return new Date(dateStr).toLocaleDateString(undefined, options);
   };
-
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -66,9 +71,6 @@ const ClientVerificationTable = ({ onReviewClick }) => {
         );
     }
   };
-
-
-
 
   return (
     <div className="bg-white rounded-xl shadow-sm mt-8 border border-gray-100">
@@ -110,13 +112,15 @@ const ClientVerificationTable = ({ onReviewClick }) => {
             </tr>
           </thead>
           <tbody>
-            {loading?(<tr>
+            {loading ? (
+              <tr>
                 <td colSpan="6" className="p-6 text-center">
                   <div className="flex justify-center items-center h-20">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
                   </div>
                 </td>
-              </tr>):(requests.length === 0 ? (
+              </tr>
+            ) : requests.length === 0 ? (
               <tr>
                 <td colSpan="6" className="text-center p-8 text-gray-500">
                   No verification requests found
@@ -156,9 +160,7 @@ const ClientVerificationTable = ({ onReviewClick }) => {
                   <td className="p-4 text-sm text-gray-600">
                     {formatDate(request.requestDate || request.createdAt)}
                   </td>
-                  <td className="p-4">
-                    {getStatusBadge(request.status)}
-                  </td>
+                  <td className="p-4">{getStatusBadge(request.status)}</td>
                   <td className="p-4">
                     <div className="flex space-x-2">
                       <button
@@ -172,7 +174,7 @@ const ClientVerificationTable = ({ onReviewClick }) => {
                   </td>
                 </tr>
               ))
-            ))}
+            )}
           </tbody>
         </table>
       </div>

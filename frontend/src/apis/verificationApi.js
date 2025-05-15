@@ -6,7 +6,8 @@ export const verificationRequest = (formData) => {
   });
 };
 
-export const verifiedClient = ()=>{
-  return axiosInstance.get(`/verification/getClientData`,{withCredentials:true});
-}
-
+export const verifiedClient = () => {
+  return axiosInstance.get(`/verification/getClientData`, {
+    withCredentials: true,
+  });
+};

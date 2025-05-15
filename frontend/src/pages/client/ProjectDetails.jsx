@@ -1,20 +1,30 @@
 import { useEffect, useState } from "react";
-import { Download, CheckCircle, X, Loader2, Check, ChevronDown } from "lucide-react";
+import {
+  Download,
+  CheckCircle,
+  X,
+  Loader2,
+  Check,
+  ChevronDown,
+} from "lucide-react";
 import { projectDetails } from "../../apis/projectApi";
 import { toast } from "sonner";
 import Navbar from "../../components/user/navbar/navbar";
 import Footer from "../../components/user/footer/Footer";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const ProjectDetails = () => {
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState(null);
-  const navigate = useNavigate()
-    const [statusLoading, setStatusLoading] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [statusLoading, setStatusLoading] = useState(null);
   const [expandedRow, setExpandedRow] = useState(null);
-  const [appliedUser,setAppliedUsers] = useState(null);
+  const [appliedUser, setAppliedUsers] = useState(null);
+  
   const queryParams = new URLSearchParams(location.search);
   const id = queryParams.get("id");
+  
   const getProjectDetails = async () => {
     try {
       setLoading(true);
@@ -28,8 +38,7 @@ const ProjectDetails = () => {
         return;
       }
       setProject(response.data.projectData);
-      setAppliedUsers(response.data.appliedUsers)
-
+      setAppliedUsers(response.data.appliedUsers);
     } catch (error) {
       toast.error(error.message || "An error occurred", "error");
       console.log(error);
@@ -42,17 +51,14 @@ const ProjectDetails = () => {
     if (id) {
       getProjectDetails();
     }
-  }, []);
+  }, [id]);
 
   const handleStatusChange = async (applicationId, freelancerId, newStatus) => {
     try {
-      // Set loading state for this specific action
       setStatusLoading(`${applicationId}-${newStatus}`);
-      
-      // Call the provided callback
+
       await onStatusChange(applicationId, freelancerId, newStatus);
-      
-      // Reset loading state
+
       setStatusLoading(null);
     } catch (error) {
       console.error("Error changing status:", error);
@@ -62,24 +68,25 @@ const ProjectDetails = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'applied':
+      case "applied":
         return "bg-blue-100 text-blue-800";
-      case 'hired':
+      case "hired":
         return "bg-green-100 text-green-800";
-      case 'rejected':
+      case "rejected":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
   };
- const formatDate = (dateString) => {
+  
+  const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -115,18 +122,26 @@ const ProjectDetails = () => {
 
   const formattedBudget = new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD",
+    currency: "INR",
   }).format(project.budget);
 
   return (
     <div className="bg-gray-50 min-h-screen p-6">
-      <Navbar/>
+      <Navbar />
       <div className="max-w-6xl mt-5 mb-5 mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+        <div className="flex justify-end items-end p-5">
+          <button 
+            onClick={() => navigate(`/client/editProject?id=${id}`)} 
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md flex items-center text-sm"
+          >
+            <span className="mr-2"></span> Edit Project
+          </button>
+        </div>
         <div className="p-8">
           <h1 className="text-2xl font-bold text-center text-gray-800 mb-8">
             {project.title}
           </h1>
-
+         
           <div className="grid md:grid-cols-2 gap-8 mb-8">
             <div>
               <h2 className="text-xl font-bold mb-4 text-gray-800">
@@ -246,7 +261,6 @@ const ProjectDetails = () => {
                   {project.attachments.map((attachment, index) => {
                     const fileName = attachment.split("/").pop();
 
-                    // Modify the URL to force download using fl_attachment
                     const downloadUrl = attachment.replace(
                       "/upload/",
                       "/upload/"
@@ -278,126 +292,214 @@ const ProjectDetails = () => {
             </div>
           </div>
 
-<div className="overflow-x-auto bg-white rounded-lg shadow">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              No.
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Freelancer Name
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Applied Date
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Status
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Details
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {appliedUser.length > 0 ? (
-            appliedUser.map((application, index) => (
-              <>
-                <tr key={index} className={expandedRow === index ? "bg-blue-50" : "hover:bg-gray-50"}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {index + 1}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer" onClick={()=>navigate(`/client/freelancerProfile?id=${application.freelancerId}`)}>
-                    {application.freelancerName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(application.appliedAt)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(application.status)}`}>
-                      {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex space-x-2">
-                      {application.status === 'applied' && (
-                        <>
-                          <button
-                            onClick={() => handleStatusChange(application._id, application.freelancerId, 'hired')}
-                            disabled={statusLoading === `${application._id}-hired`}
-                            className="px-3 py-1 bg-green-100 text-green-800 rounded-md hover:bg-green-200 transition-colors flex items-center"
-                          >
-                            <Check size={14} className="mr-1" />
-                            {statusLoading === `${application._id}-hired` ? 'Hiring...' : 'Hire'}
-                          </button>
-                          <button
-                            onClick={() => handleStatusChange(application._id, application.freelancerId, 'rejected')}
-                            disabled={statusLoading === `${application._id}-rejected`}
-                            className="px-3 py-1 bg-red-100 text-red-800 rounded-md hover:bg-red-200 transition-colors flex items-center"
-                          >
-                            <X size={14} className="mr-1" />
-                            {statusLoading === `${application._id}-rejected` ? 'Rejecting...' : 'Reject'}
-                          </button>
-                        </>
-                      )}
-                      {application.status !== 'applied' && (
-                        <span className="text-sm text-gray-500 italic">Status already updated</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button 
-                      onClick={() => setExpandedRow(expandedRow === index ? null : index)}
-                      className="text-blue-600 hover:text-blue-900 flex items-center"
-                    >
-                      Details
-                      <ChevronDown 
-                        className={`ml-1 transition-transform duration-200 ${expandedRow === index ? 'transform rotate-180' : ''}`} 
-                        size={16} 
-                      />
-                    </button>
-                  </td>
+          <div className="overflow-x-auto bg-white rounded-lg shadow">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    No.
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Freelancer Name
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Applied Date
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Status
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Actions
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Details
+                  </th>
                 </tr>
-                {expandedRow === index && (
-                  <tr className="bg-blue-50">
-                    <td colSpan={6} className="px-6 py-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-900">Freelancer ID</h4>
-                          <p className="text-sm text-gray-500">{application.freelancerId}</p>
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-900">Application ID</h4>
-                          <p className="text-sm text-gray-500">{application._id}</p>
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-900">Current Status</h4>
-                          <p className="text-sm text-gray-500">{application.status}</p>
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-900">Applied On</h4>
-                          <p className="text-sm text-gray-500">{formatDate(application.appliedAt)}</p>
-                        </div>
-                        {/* Add additional fields here if needed */}
-                      </div>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {appliedUser && appliedUser.length > 0 ? (
+                  appliedUser.map((application, index) => (
+                    <>
+                      <tr
+                        key={index}
+                        className={
+                          expandedRow === index
+                            ? "bg-blue-50"
+                            : "hover:bg-gray-50"
+                        }
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {index + 1}
+                        </td>
+                        <td
+                          className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer"
+                          onClick={() =>
+                            navigate(
+                              `/client/freelancerProfile?id=${application.freelancerId}`
+                            )
+                          }
+                        >
+                          {application.freelancerName}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(application.appliedAt)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(
+                              application.status
+                            )}`}
+                          >
+                            {application.status.charAt(0).toUpperCase() +
+                              application.status.slice(1)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <div className="flex space-x-2">
+                            {application.status === "applied" && (
+                              <>
+                                <button
+                                  onClick={() =>
+                                    handleStatusChange(
+                                      application._id,
+                                      application.freelancerId,
+                                      "hired"
+                                    )
+                                  }
+                                  disabled={
+                                    statusLoading === `${application._id}-hired`
+                                  }
+                                  className="px-3 py-1 bg-green-100 text-green-800 rounded-md hover:bg-green-200 transition-colors flex items-center"
+                                >
+                                  <Check size={14} className="mr-1" />
+                                  {statusLoading === `${application._id}-hired`
+                                    ? "Hiring..."
+                                    : "Hire"}
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleStatusChange(
+                                      application._id,
+                                      application.freelancerId,
+                                      "rejected"
+                                    )
+                                  }
+                                  disabled={
+                                    statusLoading ===
+                                    `${application._id}-rejected`
+                                  }
+                                  className="px-3 py-1 bg-red-100 text-red-800 rounded-md hover:bg-red-200 transition-colors flex items-center"
+                                >
+                                  <X size={14} className="mr-1" />
+                                  {statusLoading ===
+                                  `${application._id}-rejected`
+                                    ? "Rejecting..."
+                                    : "Reject"}
+                                </button>
+                              </>
+                            )}
+                            {application.status !== "applied" && (
+                              <span className="text-sm text-gray-500 italic">
+                                Status already updated
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <button
+                            onClick={() =>
+                              setExpandedRow(
+                                expandedRow === index ? null : index
+                              )
+                            }
+                            className="text-blue-600 hover:text-blue-900 flex items-center"
+                          >
+                            Details
+                            <ChevronDown
+                              className={`ml-1 transition-transform duration-200 ${
+                                expandedRow === index
+                                  ? "transform rotate-180"
+                                  : ""
+                              }`}
+                              size={16}
+                            />
+                          </button>
+                        </td>
+                      </tr>
+                      {expandedRow === index && (
+                        <tr className="bg-blue-50">
+                          <td colSpan={6} className="px-6 py-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-900">
+                                  Freelancer ID
+                                </h4>
+                                <p className="text-sm text-gray-500">
+                                  {application.freelancerId}
+                                </p>
+                              </div>
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-900">
+                                  Application ID
+                                </h4>
+                                <p className="text-sm text-gray-500">
+                                  {application._id}
+                                </p>
+                              </div>
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-900">
+                                  Current Status
+                                </h4>
+                                <p className="text-sm text-gray-500">
+                                  {application.status}
+                                </p>
+                              </div>
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-900">
+                                  Applied On
+                                </h4>
+                                <p className="text-sm text-gray-500">
+                                  {formatDate(application.appliedAt)}
+                                </p>
+                              </div>
+                              
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-6 py-4 text-center text-sm text-gray-500"
+                    >
+                      No applications found
                     </td>
                   </tr>
                 )}
-              </>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
-                No applications found
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+              </tbody>
+            </table>
+          </div>
 
           <div className="flex mt-10 flex-col items-center space-y-4">
             <p className="text-lg font-semibold">Project completion status:</p>
@@ -413,7 +515,7 @@ const ProjectDetails = () => {
                     ...prev,
                     completionStatus: "completed",
                   }));
-                  showToast("Project status updated to completed");
+                  toast.success("Project status updated to completed");
                 }}
               >
                 Completed
@@ -426,7 +528,7 @@ const ProjectDetails = () => {
                 }`}
                 onClick={() => {
                   setProject((prev) => ({ ...prev, completionStatus: "open" }));
-                  showToast("Project status updated to not completed");
+                  toast.success("Project status updated to not completed");
                 }}
               >
                 Not Completed
@@ -435,7 +537,7 @@ const ProjectDetails = () => {
           </div>
         </div>
       </div>
-      <Footer/>
+      <Footer />
     </div>
   );
 };

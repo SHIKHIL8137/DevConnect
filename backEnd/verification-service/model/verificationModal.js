@@ -2,12 +2,12 @@ import mongoose from "mongoose";
 
 const verificationRequestSchema = new mongoose.Schema({
   clientId: {
-    type:String,
+    type: String,
     required: true,
   },
   status: {
     type: String,
-    enum: ["pending", "verified", "rejected","incomplete"],
+    enum: ["pending", "verified", "rejected", "incomplete"],
     default: "incomplete",
   },
   requestDate: {
@@ -24,6 +24,9 @@ const verificationRequestSchema = new mongoose.Schema({
   },
 });
 
-const VerificationRequest = mongoose.model("VerificationRequest", verificationRequestSchema);
+const VerificationRequest = mongoose.model(
+  "VerificationRequest",
+  verificationRequestSchema
+);
 
 export default VerificationRequest;

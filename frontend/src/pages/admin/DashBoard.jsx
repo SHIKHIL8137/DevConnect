@@ -7,8 +7,16 @@ import ClientsTable from "../../components/admin/ClientTable";
 import DashboardSummary from "../../components/admin/DashboardSummary";
 import ClientVerificationTable from "../../components/admin/clientVerificationTable";
 import ClientVerificationDetail from "../../components/admin/clientVerificationDetails";
+import ProjectsTable from "../../components/admin/ProjectTable";
+import ProjectDetails from "../../components/admin/ProjectDetails";
 
-const validTabs = ["dashboard", "freelancers", "clients","clientVerification"];
+const validTabs = [
+  "dashboard",
+  "freelancers",
+  "clients",
+  "clientVerification",
+  "projects",
+];
 
 const DevConnectDashboard = () => {
   const { tab } = useParams();
@@ -20,8 +28,12 @@ const DevConnectDashboard = () => {
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState(defaultTab);
+
   const [showVerificationDetails, setShowVerificationDetails] = useState(false);
   const [selectedVerification, setSelectedVerification] = useState(null);
+
+  const [showProjectDetails, setShowProjectDetails] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
 
   useEffect(() => {
     if (!validTabs.includes(tab)) {
@@ -29,11 +41,13 @@ const DevConnectDashboard = () => {
     } else {
       setActiveTab(tab);
     }
-          if (tab !== "clientVerification") {
-        setShowVerificationDetails(false);
-      }
-
-  }, [tab,navigate]);
+    if (tab !== "clientVerification") {
+      setShowVerificationDetails(false);
+    }
+    if (tab !== "projects") {
+      setShowProjectDetails(false);
+    }
+  }, [tab, navigate]);
 
   const handleTap = () => {
     tapCount.current += 1;
@@ -55,15 +69,25 @@ const DevConnectDashboard = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-   const handleReviewClick = (verificationDataID) => {
-    console.log(verificationDataID)
+  const handleReviewClick = (verificationDataID) => {
+    console.log(verificationDataID);
     setSelectedVerification(verificationDataID);
     setShowVerificationDetails(true);
   };
-  
+
   const handleBackToList = () => {
     setShowVerificationDetails(false);
     setSelectedVerification(null);
+  };
+
+  const handleProjectClick = (project) => {
+    setSelectedProject(project);
+    setShowProjectDetails(true);
+  };
+
+  const handleBackToProjects = () => {
+    setShowProjectDetails(false);
+    setSelectedProject(null);
   };
 
   const renderContent = () => {
@@ -72,11 +96,20 @@ const DevConnectDashboard = () => {
         return <FreelancersTable />;
       case "clients":
         return <ClientsTable />;
-       case "clientVerification":
-         return showVerificationDetails ? (
-          <ClientVerificationDetail 
-            verificationDataID={selectedVerification} 
-            onBack={handleBackToList} 
+      case "projects":
+        return showProjectDetails ? (
+          <ProjectDetails
+            project={selectedProject}
+            onBackClick={handleBackToProjects}
+          />
+        ) : (
+          <ProjectsTable onProjectClick={handleProjectClick} />
+        );
+      case "clientVerification":
+        return showVerificationDetails ? (
+          <ClientVerificationDetail
+            verificationDataID={selectedVerification}
+            onBack={handleBackToList}
           />
         ) : (
           <ClientVerificationTable onReviewClick={handleReviewClick} />
@@ -93,11 +126,12 @@ const DevConnectDashboard = () => {
         return "Freelancers";
       case "clients":
         return "Clients";
+      case "projects":
+        return showProjectDetails ? "Project Details" : "Projects";
       case "clientVerification":
-        return showVerificationDetails 
-          ? "Verification Request Details" 
+        return showVerificationDetails
+          ? "Verification Request Details"
           : "Verification Requests";
-
       case "dashboard":
       default:
         return "Dashboard";
@@ -132,6 +166,14 @@ const DevConnectDashboard = () => {
                 className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md flex items-center text-sm"
               >
                 <span className="mr-2">←</span> Back to List
+              </button>
+            )}
+            {activeTab === "projects" && showProjectDetails && (
+              <button
+                onClick={handleBackToProjects}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md flex items-center text-sm"
+              >
+                <span className="mr-2">←</span> Back to Projects
               </button>
             )}
           </div>

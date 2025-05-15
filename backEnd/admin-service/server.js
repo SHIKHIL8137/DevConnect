@@ -8,6 +8,7 @@ import cors from "cors";
 import { connectDB } from "./config/db.js";
 import cookieParser from "cookie-parser";
 import commonRoute from "./route/commonRoute.js";
+import projectRoute from "./route/projectRoute.js";
 dotenv.config();
 
 const app = express();
@@ -28,6 +29,7 @@ app.use("/dashboard", dashbordRoute);
 app.use("/freelancer", freelancerRoute);
 app.use("/client", clientRoute);
 app.use("/common", commonRoute);
+app.use("/project", projectRoute);
 
 connectDB();
 app.listen(port, () => {

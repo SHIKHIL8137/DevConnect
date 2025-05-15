@@ -149,27 +149,28 @@ export const updateBlockStatus = async (req, res) => {
   }
 };
 
-export const getClientDatas = async(req,res)=>{
+export const getClientDatas = async (req, res) => {
   try {
-    const {users} = req.body;
-    const clients = await Client.find({_id:{$in:users}}).select('-password');
-    if(!clients) return res.status(400).json({status:false,message:"an error occure fetching data"});
-    res.status(200).json({status:true,clients});
+    const { users } = req.body;
+    const clients = await Client.find({ _id: { $in: users } }).select(
+      "-password"
+    );
+    if (!clients)
+      return res
+        .status(400)
+        .json({ status: false, message: "an error occure fetching data" });
+    res.status(200).json({ status: true, clients });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ status: false, message: "Server Error"});
+    return res.status(500).json({ status: false, message: "Server Error" });
   }
-}
+};
 
-export const getClient=async(req,res)=>{
+export const getClient = async (req, res) => {
   try {
-    const {id} = req.query;
+    const { id } = req.query;
     const client = await Client.findById(id);
-    res.status(200).json({client});
+    res.status(200).json({ client });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ status: false, message: "Server Error"});
+    return res.status(500).json({ status: false, message: "Server Error" });
   }
-}
+};

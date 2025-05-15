@@ -9,7 +9,6 @@ import moment from "moment";
 import { isValidEmail } from "../util/validation.js";
 import { validateProfileUpdate } from "../util/validateForm.js";
 
-
 export const otpgenerate = async (req, res) => {
   try {
     const { email, role } = req.body;
@@ -171,7 +170,6 @@ export const otpgenerate = async (req, res) => {
   }
 };
 
-
 export const checkUserName = async (req, res) => {
   try {
     const { userName: prefix } = req.body;
@@ -206,7 +204,6 @@ export const checkUserName = async (req, res) => {
       .json({ status: false, message: "Internal Server Error" });
   }
 };
-
 
 export const otpValidation = async (req, res) => {
   try {
@@ -275,7 +272,7 @@ export const validateUser = async (req, res) => {
     const hashedPassword = await hash(password, 10);
     const userId = generateUserId();
 
-    const newUserData ={
+    const newUserData = {
       userId,
       userName,
       email,
@@ -310,7 +307,7 @@ export const validateUser = async (req, res) => {
 export const loginValidate = async (req, res) => {
   try {
     const { userData, password } = req.body;
-console.log(req.body)
+    console.log(req.body);
     if (!userData || !password) {
       return res
         .status(400)
@@ -321,11 +318,11 @@ console.log(req.body)
       ? { email: userData.trim() }
       : { userName: userData.trim() };
 
-      let userExist = await Freelancer.findOne(query);
-      if (!userExist) userExist = await Client.findOne(query);
-  
-      if (!userExist)
-        return res.status(404).json({ status: false, message: "User not Found" });
+    let userExist = await Freelancer.findOne(query);
+    if (!userExist) userExist = await Client.findOne(query);
+
+    if (!userExist)
+      return res.status(404).json({ status: false, message: "User not Found" });
 
     if (userExist.block)
       return res
@@ -353,7 +350,7 @@ console.log(req.body)
     }
 
     const token = generateToken({
-      userName:userExist.userName,
+      userName: userExist.userName,
       userId: userExist._id,
       role: userExist.role,
       email: userExist.email,
@@ -376,7 +373,7 @@ console.log(req.body)
 
 export const getUserData = async (req, res) => {
   try {
-    const { userId,role } = req.user;
+    const { userId, role } = req.user;
     const Model = role === "freelancer" ? Freelancer : Client;
     const user = await Model.findById(userId).select("-password");
 
@@ -390,7 +387,7 @@ export const getUserData = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   try {
-    console.log('data',req.body)
+    console.log("data", req.body);
     const userId = req.user?.userId;
     const userRole = req.user?.role;
     if (!userId) {
@@ -433,7 +430,7 @@ export const updateUser = async (req, res) => {
       address: "address",
       pricePerHour: "pricePerHour",
       companyName: "companyName",
-      experienceLevel:"experienceLevel"
+      experienceLevel: "experienceLevel",
     };
 
     const mappedData = {};
@@ -457,7 +454,7 @@ export const updateUser = async (req, res) => {
         "twitter",
         "web",
         "address",
-        "experienceLevel"
+        "experienceLevel",
       ],
       client: [
         "userName",
@@ -486,7 +483,7 @@ export const updateUser = async (req, res) => {
       }
     }
 
-console.log(filteredData)
+    console.log(filteredData);
     await Model.findByIdAndUpdate(
       userId,
       { $set: filteredData },
@@ -507,30 +504,30 @@ console.log(filteredData)
   }
 };
 
-export const updateResume = async(req,res)=>{
+export const updateResume = async (req, res) => {
   try {
-    const {userId} = req.user;
-    const resumePath = req.file?.path
+    const { userId } = req.user;
+    const resumePath = req.file?.path;
     if (!resumePath) {
       return res.status(400).json({ message: "No resume uploaded" });
     }
-     const updatedFreelancer = await Freelancer.findByIdAndUpdate(
+    const updatedFreelancer = await Freelancer.findByIdAndUpdate(
       userId,
       { resume: resumePath },
-      { new: true } 
+      { new: true }
     );
     if (!updatedFreelancer) {
       return res.status(404).json({ message: "Freelancer not found" });
     }
-res.status(200).json({
+    res.status(200).json({
       message: "Resume updated",
-      status:true
+      status: true,
     });
   } catch (error) {
-     console.error("Resume update error:", error);
+    console.error("Resume update error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 export const updateFreelancerProfile = async (req, res) => {
   try {
@@ -589,7 +586,7 @@ export const updateProfileImage = async (req, res) => {
       return res
         .status(400)
         .json({ status: false, message: "No file uploaded" });
-    
+
     if (!userId)
       return res.status(401).json({ status: false, message: "User not found" });
 
@@ -630,9 +627,7 @@ export const forgetPassword = async (req, res) => {
         .status(400)
         .json({ status: false, message: "email missing!!!" });
 
-
     const freelancer = await Freelancer.findOne({ email: email });
-    
 
     const client = await Client.findOne({ email: email });
 
@@ -758,12 +753,10 @@ export const forgetPassword = async (req, res) => {
 
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
-        return res
-          .status(500)
-          .json({
-            status: false,
-            message: "An error occures sending the mail",
-          });
+        return res.status(500).json({
+          status: false,
+          message: "An error occures sending the mail",
+        });
       }
       console.log("Email sent", info.response);
     });
@@ -809,7 +802,7 @@ export const changePassword = async (req, res) => {
         .status(404)
         .json({ status: false, message: "Email does not exist. Try again." });
     }
-  
+
     const otpDB = await OTP.findOne({ email });
 
     if (!otpDB || !otpDB.otp || otpDB.otp !== otp) {
@@ -834,9 +827,9 @@ export const changePassword = async (req, res) => {
 
 export const deleteResume = async (req, res) => {
   try {
-    const {userId} = req.user;
+    const { userId } = req.user;
 
-   const updatedFreelancer = await Freelancer.findByIdAndUpdate(
+    const updatedFreelancer = await Freelancer.findByIdAndUpdate(
       userId,
       { resume: "" },
       { new: true }

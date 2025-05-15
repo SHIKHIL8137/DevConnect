@@ -16,9 +16,6 @@ export const userProxy = proxy(process.env.USER_SERVICE_URL, {
   },
 });
 
-
-
-
 export const adminProxy = proxy(process.env.ADMIN_SERVICE_URL, {
   proxyReqPathResolver: (req) => req.originalUrl.replace("/admin", ""),
   proxyReqBodyDecorator: (body, req) => {
@@ -33,7 +30,6 @@ export const adminProxy = proxy(process.env.ADMIN_SERVICE_URL, {
   },
 });
 
-
 export const varificationProxy = proxy(process.env.VERIFICATION_SERVICE_URL, {
   proxyReqPathResolver: (req) => req.originalUrl.replace("/verification", ""),
   proxyReqBodyDecorator: (body, req) => {
@@ -47,7 +43,6 @@ export const varificationProxy = proxy(process.env.VERIFICATION_SERVICE_URL, {
     return proxyResData;
   },
 });
-
 
 export const projectProxy = proxy(process.env.PROJECT_SERVICE_URL, {
   proxyReqPathResolver: (req) => req.originalUrl.replace("/project", ""),

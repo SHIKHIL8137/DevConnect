@@ -57,31 +57,38 @@ export const updateFreelancer = (formData) => {
   });
 };
 
+export const clientHome = (query) => {
+  const queryString = new URLSearchParams(query).toString();
+  console.log(queryString);
+  return axiosInstance.get(`/user/commonData/clinetHome?${queryString}`, {
+    withCredentials: true,
+  });
+};
 
-export const clientHome = (query)=>{
-   const queryString = new URLSearchParams(query).toString();
-   console.log(queryString)
-  return axiosInstance.get(`/user/commonData/clinetHome?${queryString}`,{withCredentials:true});
-}
-
-export const freelancerFetch =(userId)=>{
+export const freelancerFetch = (userId) => {
   return axiosInstance.get(`/user/commonData/freelancerProfile?id=${userId}`);
-}
+};
 
-export const freelancerHome =(query)=>{
-    const queryString = new URLSearchParams(query).toString();
-   console.log(queryString)
-  return axiosInstance.get(`/project/freelancerHome?${queryString}`,{withCredentials:true})
-}
+export const freelancerHome = (query) => {
+  const queryString = new URLSearchParams(query).toString();
+  console.log(queryString);
+  return axiosInstance.get(`/project/freelancerHome?${queryString}`, {
+    withCredentials: true,
+  });
+};
 
-export const applyProject = (formData)=>{
-  return axiosInstance.post(`/project/apply`,formData,{withCredentials:true});
-}
+export const applyProject = (formData) => {
+  return axiosInstance.post(`/project/apply`, formData, {
+    withCredentials: true,
+  });
+};
 
-export const uploadResume = (formData)=>{
-return axiosInstanceMultipart.patch('/user/updateResume',formData,{withCredentials:true});
-}
+export const uploadResume = (formData) => {
+  return axiosInstanceMultipart.patch("/user/updateResume", formData, {
+    withCredentials: true,
+  });
+};
 
-export const removeResume =()=>{
-  return axiosInstance.delete('/user/deleteResume',{withCredentials:true});
-}
+export const removeResume = () => {
+  return axiosInstance.delete("/user/deleteResume", { withCredentials: true });
+};

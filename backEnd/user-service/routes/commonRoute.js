@@ -1,11 +1,14 @@
-import express from 'express';
-import { clientHomeData, freelancerProfile } from '../controllers/commonRoute.js';
-import { jwtAuthMiddleware } from '../../shared/auth/middleWares/jwtTokenVerify.js';
+import express from "express";
+import {
+  clientHomeData,
+  freelancerProfile,
+  freelancersDataHome,
+} from "../controllers/commonRoute.js";
+import { jwtAuthMiddleware } from "../../shared/auth/middleWares/jwtTokenVerify.js";
 const route = express();
 
+route.get("/clinetHome", clientHomeData);
+route.get("/freelancerProfile", jwtAuthMiddleware, freelancerProfile);
+route.get('/freelancersDataHome',freelancersDataHome);
 
-route.get('/clinetHome',clientHomeData)
-route.get('/freelancerProfile',jwtAuthMiddleware,freelancerProfile);
-
-
-export default route
+export default route;

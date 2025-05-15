@@ -4,11 +4,11 @@ export const updateProjectUser = async (req, res) => {
   try {
     const { projectId } = req.body;
     const { userId } = req.user;
-    console.log('hello',projectId,userId)
+    console.log("hello", projectId, userId);
     const updatedUser = await Freelancer.findByIdAndUpdate(
       userId,
       {
-        $addToSet: { projects: projectId }, 
+        $addToSet: { projects: projectId },
       },
       { new: true }
     );
@@ -16,9 +16,9 @@ export const updateProjectUser = async (req, res) => {
     if (!updatedUser) {
       return res.status(404).json({ message: "Freelancer not found" });
     }
-    res.status(200).json({message:"ok"});
+    res.status(200).json({ message: "ok" });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json({ message: "Server error" });
   }
 };

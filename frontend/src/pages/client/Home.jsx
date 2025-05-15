@@ -1,5 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { Star, ChevronDown, Filter, Search, MessageSquare } from "lucide-react";
+import {
+  Star,
+  ChevronDown,
+  Filter,
+  Search,
+  MessageSquare,
+  RefreshCw,
+} from "lucide-react";
 import Navbar from "../../components/user/navbar/navbar";
 import Footer from "../../components/user/footer/Footer";
 import { clientHome } from "../../apis/userApi";
@@ -7,7 +14,7 @@ import { FreelancerSkeletonHome } from "../../components/common/skeleton";
 import { useNavigate } from "react-router-dom";
 
 const FreelancerMarketplace = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [freelancers, setFreelancers] = useState([]);
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("");
@@ -15,6 +22,7 @@ const FreelancerMarketplace = () => {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [minRating, setMinRating] = useState("");
+  const [experienceLevel, setExperienceLevel] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -26,7 +34,6 @@ const FreelancerMarketplace = () => {
   const [totalFreelancers, setTotalFreelancers] = useState(0);
   const [loading, setLoading] = useState(false);
 
-
   const fetchFreelancer = useCallback(async () => {
     try {
       setLoading(true);
@@ -37,6 +44,7 @@ const FreelancerMarketplace = () => {
         minPrice,
         maxPrice,
         minRating,
+        experienceLevel,
         page,
         limit: 5,
         sortBy,
@@ -48,7 +56,7 @@ const FreelancerMarketplace = () => {
       setLoading(false);
     } catch (error) {
       console.error("Error fetching freelancers", error);
-      setFreelancers(sampleFreelancers);
+      setFreelancers([]);
       setLoading(false);
     }
   }, [
@@ -58,6 +66,7 @@ const FreelancerMarketplace = () => {
     minPrice,
     maxPrice,
     minRating,
+    experienceLevel,
     page,
     sortBy,
     sortOrder,
@@ -72,6 +81,7 @@ const FreelancerMarketplace = () => {
     setPage(1);
     fetchFreelancer();
   };
+
   const handleSort = (e) => {
     const value = e.target.value;
 
@@ -87,13 +97,29 @@ const FreelancerMarketplace = () => {
     setPage(1);
   };
 
+  const resetFilters = () => {
+    setSearch("");
+    setLocation("");
+    setSkill("");
+    setMinPrice("");
+    setMaxPrice("");
+    setMinRating("");
+    setExperienceLevel("");
+    setSelectedCategory("All");
+    setSelectedRate("");
+    setSelectedExperience("");
+    setSortBy("rating");
+    setSortOrder("desc");
+    setPage(1);
+  };
+
   const categories = ["All", "Nodejs", "React", "MongoDB"];
 
   const hourlyRates = [
-    { label: "$0 - $50", min: "0", max: "50" },
-    { label: "$50 - $100", min: "50", max: "100" },
-    { label: "$100 - $150", min: "100", max: "150" },
-    { label: "$150+", min: "150", max: "" },
+    { label: "₹0 - ₹500", min: "0", max: "500" },
+    { label: "₹500 - ₹1000", min: "500", max: "1000" },
+    { label: "₹1000 - ₹1500", min: "1000", max: "1500" },
+    { label: "₹1500+", min: "1500", max: "" },
   ];
 
   const experienceLevels = ["Entry", "Intermediate", "Expert"];
@@ -113,6 +139,9 @@ const FreelancerMarketplace = () => {
 
   const handleExperienceSelect = (level) => {
     setSelectedExperience(level);
+    const dbLevel = level.toLowerCase();
+    setExperienceLevel(dbLevel);
+
     setMinRating(
       level === "Entry" ? "1" : level === "Intermediate" ? "3" : "4"
     );
@@ -194,9 +223,18 @@ const FreelancerMarketplace = () => {
               }`}
             >
               <div className="bg-white p-5 rounded-lg shadow mb-4">
-                <div className="font-medium text-gray-800 mb-4 flex items-center">
-                  <Filter size={18} className="mr-2" />
-                  Filters
+                <div className="flex items-center justify-between mb-4">
+                  <div className="font-medium text-gray-800 flex items-center">
+                    <Filter size={18} className="mr-2" />
+                    Filters
+                  </div>
+                  <button
+                    onClick={resetFilters}
+                    className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    <RefreshCw size={14} className="mr-1" />
+                    Reset All
+                  </button>
                 </div>
 
                 {/* <div className="mb-6">
@@ -217,6 +255,7 @@ const FreelancerMarketplace = () => {
                     ))}
                   </ul>
                 </div> */}
+
                 <div className="mb-6">
                   <h3 className="font-medium text-gray-700 mb-3">
                     Hourly Rate
@@ -329,12 +368,17 @@ const FreelancerMarketplace = () => {
                                 <span className="ml-1 text-sm">
                                   {freelancer.rating}/5.0
                                 </span>
+                                {freelancer.experienceLevel && (
+                                  <span className="ml-3 text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded capitalize">
+                                    {freelancer.experienceLevel}
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>
                           <div className="mt-4 sm:mt-0 text-right">
                             <p className="font-bold text-xl">
-                              ${freelancer.pricePerHour}/hr
+                              ₹{freelancer.pricePerHour}/hr
                             </p>
                           </div>
                         </div>
@@ -352,7 +396,14 @@ const FreelancerMarketplace = () => {
                         </div>
 
                         <div className="border-t mt-6 pt-4 flex justify-end">
-                          <button className="px-4 py-2 text-blue-500 border border-blue-500 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer" onClick={()=>navigate(`/client/freelancerProfile?id=${freelancer._id}`)}>
+                          <button
+                            className="px-4 py-2 text-blue-500 border border-blue-500 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
+                            onClick={() =>
+                              navigate(
+                                `/client/freelancerProfile?id=${freelancer._id}`
+                              )
+                            }
+                          >
                             View Profile
                           </button>
                         </div>
@@ -363,6 +414,12 @@ const FreelancerMarketplace = () => {
                       <p className="text-gray-600">
                         No freelancers found matching your criteria.
                       </p>
+                      <button
+                        onClick={resetFilters}
+                        className="mt-4 px-4 py-2 text-blue-500 border border-blue-500 rounded-lg hover:bg-blue-50 transition-colors"
+                      >
+                        Reset Filters
+                      </button>
                     </div>
                   )}
                 </div>

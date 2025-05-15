@@ -1,16 +1,23 @@
 import { useState, useEffect, useCallback } from "react";
-import { Star, ChevronDown, Filter, Search, MessageSquare, RefreshCw } from "lucide-react";
+import {
+  Star,
+  ChevronDown,
+  Filter,
+  Search,
+  MessageSquare,
+  RefreshCw,
+} from "lucide-react";
 import Navbar from "../../components/user/navbar/navbar";
 import Footer from "../../components/user/footer/Footer";
 
-import { FreelancerSkeletonHome} from "../../components/common/skeleton";
+import { FreelancerSkeletonHome } from "../../components/common/skeleton";
 import { useNavigate } from "react-router-dom";
 import { freelancerHome } from "../../apis/userApi";
 import { useSelector } from "react-redux";
 import ProjectCard from "../../components/user/home/ProjectCard";
 
 const FreelancerProjectListing = () => {
-  const {user} = useSelector((state)=>state.user)
+  const { user } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [search, setSearch] = useState("");
@@ -102,16 +109,27 @@ const FreelancerProjectListing = () => {
     setPage(1);
   };
 
-  const categories = ["All", "Web Development", "Mobile App", "UI/UX Design", "DevOps"];
-
-  const budgetRanges = [
-    { label: "$0 - $1,000", min: "0", max: "1000" },
-    { label: "$1,000 - $5,000", min: "1000", max: "5000" },
-    { label: "$5,000 - $10,000", min: "5000", max: "10000" },
-    { label: "$10,000+", min: "10000", max: "" },
+  const categories = [
+    "All",
+    "Web Development",
+    "Mobile App",
+    "UI/UX Design",
+    "DevOps",
   ];
 
-  const projectDurations = ["Less than 1 month", "1-3 months", "3-6 months", "6+ months"];
+  const budgetRanges = [
+    { label: "₹0 - ₹1,0000", min: "0", max: "10000" },
+    { label: "₹10,000 - ₹50,000", min: "10000", max: "50000" },
+    { label: "₹50,000 - ₹1,00,000", min: "50000", max: "10000" },
+    { label: "₹1,00,000+", min: "100000", max: "" },
+  ];
+
+  const projectDurations = [
+    "Less than 1 month",
+    "1-3 months",
+    "3-6 months",
+    "6+ months",
+  ];
 
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
@@ -126,10 +144,9 @@ const FreelancerProjectListing = () => {
     setPage(1);
   };
 
-
   const handleDurationSelect = (duration) => {
     setSelectedDuration(duration);
-    setDuration(duration); 
+    setDuration(duration);
     setPage(1);
   };
 
@@ -154,7 +171,8 @@ const FreelancerProjectListing = () => {
             Find the Perfect Project for Your Skills
           </h1>
           <p className="text-white text-lg md:text-xl mb-8 opacity-90">
-            Browse available projects that match your expertise in development, design, and IT solutions
+            Browse available projects that match your expertise in development,
+            design, and IT solutions
           </p>
 
           <form
@@ -213,12 +231,12 @@ const FreelancerProjectListing = () => {
                     Filters
                   </div>
                   {/* Add Reset Button */}
-                  <button 
+                  <button
                     onClick={resetFilters}
                     className="flex items-center text-blue-500 hover:text-blue-700 text-sm"
                   >
                     <RefreshCw size={14} className="mr-1" />
-                    Reset
+                    Reset All
                   </button>
                 </div>
 
@@ -241,7 +259,7 @@ const FreelancerProjectListing = () => {
                     ))}
                   </ul>
                 </div> */}
-                
+
                 <div className="mb-6">
                   <h3 className="font-medium text-gray-700 mb-3">
                     Budget Range
@@ -316,16 +334,6 @@ const FreelancerProjectListing = () => {
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
                     />
                   </div>
-                  <button 
-                    onClick={() => {
-                      setSortBy("createdAt");
-                      setSortOrder("desc");
-                    }}
-                    className="ml-2 text-blue-500 hover:text-blue-700"
-                    title="Reset Sort"
-                  >
-                    <RefreshCw size={16} />
-                  </button>
                 </div>
               </div>
 
@@ -337,22 +345,23 @@ const FreelancerProjectListing = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {Array.isArray(displayProjects) && displayProjects.length > 0 ? (
-  displayProjects.map((project) => (
-    <ProjectCard 
-      key={project._id}
-      project={project}
-      currentUserId={user._id} 
-      fetchProject={fetchProjects}
-    />
-  ))
-) : (
-  <div className="bg-white rounded-lg shadow p-8 text-center">
-    <p className="text-gray-600">
-      No projects found matching your criteria.
-    </p>
-  </div>
-)}
+                  {Array.isArray(displayProjects) &&
+                  displayProjects.length > 0 ? (
+                    displayProjects.map((project) => (
+                      <ProjectCard
+                        key={project._id}
+                        project={project}
+                        currentUserId={user._id}
+                        fetchProject={fetchProjects}
+                      />
+                    ))
+                  ) : (
+                    <div className="bg-white rounded-lg shadow p-8 text-center">
+                      <p className="text-gray-600">
+                        No projects found matching your criteria.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 

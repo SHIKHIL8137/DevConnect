@@ -186,7 +186,6 @@ const ProfileUpdate = () => {
     }
   };
 
-  // Added missing function for handling drag events
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -252,7 +251,7 @@ const ProfileUpdate = () => {
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ];
 
-    const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+    const maxSizeInBytes = 5 * 1024 * 1024; 
 
     if (!validTypes.includes(file.type)) {
       toast.error("Only PDF and DOC/DOCX files are allowed");
@@ -263,11 +262,13 @@ const ProfileUpdate = () => {
       toast.error("File size must be less than 5MB");
       return;
     }
+    const previousResume = resume;
+    const previousFileName = resumeFileName;
 
     setResume(file);
     setResumeFileName(file.name);
 
-    handleResumeUpload(file);
+    handleResumeUpload(file, previousResume, previousFileName);
 
     if (errors.resume) {
       setErrors((prev) => ({
@@ -288,6 +289,8 @@ const ProfileUpdate = () => {
       const response = await uploadResume(resumeFormData);
 
       if (!response.data.status) {
+      setResume(previousResume);
+      setResumeFileName(previousFileName);
         return toast.error(response.data.message);
       }
 
@@ -589,7 +592,7 @@ const ProfileUpdate = () => {
                   htmlFor="userName"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Name:
+                  Name:<span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -613,7 +616,7 @@ const ProfileUpdate = () => {
                   htmlFor="position"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Position:
+                  Position:<span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -666,7 +669,7 @@ const ProfileUpdate = () => {
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Email:
+                  Email:<span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
@@ -690,7 +693,7 @@ const ProfileUpdate = () => {
                   htmlFor="phoneNumber"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Phone:
+                  Phone:<span className="text-red-500">*</span>
                 </label>
                 <input
                   type="tel"
@@ -716,7 +719,7 @@ const ProfileUpdate = () => {
                   htmlFor="skills"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Skills:
+                  Skills:<span className="text-red-500">*</span>
                 </label>
                 <textarea
                   id="skills"
@@ -745,7 +748,7 @@ const ProfileUpdate = () => {
                   htmlFor="about"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  About:
+                  About:<span className="text-red-500">*</span>
                 </label>
                 <textarea
                   id="about"
@@ -768,7 +771,7 @@ const ProfileUpdate = () => {
                   htmlFor="pricePerHour"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Price(/hr):
+                  Price(/hr):<span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -779,7 +782,7 @@ const ProfileUpdate = () => {
                   className={`w-full p-3 bg-gray-50 border ${
                     errors.pricePerHour ? "border-red-500" : "border-gray-200"
                   } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition`}
-                  placeholder="$0.00"
+                  placeholder="₹0.00"
                 />
                 {errors.pricePerHour && (
                   <p className="mt-1 text-sm text-red-500">
@@ -793,7 +796,7 @@ const ProfileUpdate = () => {
                   htmlFor="address"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Address:
+                  Address:<span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"

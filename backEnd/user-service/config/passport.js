@@ -2,8 +2,8 @@ import passport from "passport";
 import GoogleStrategy from "passport-google-oauth20";
 import dotenv from "dotenv";
 import { generateUserId } from "../util/reuseFunctions.js";
-import Client from '../model/user/clientMode.js'
-import Freelancer from '../model/user/freelancerModel.js'
+import Client from "../model/user/clientMode.js";
+import Freelancer from "../model/user/freelancerModel.js";
 
 dotenv.config();
 
@@ -26,8 +26,12 @@ passport.use(
         const Model = role === "freelancer" ? Freelancer : Client;
 
         let user =
-          (await Freelancer.findOne({ $or: [{ googleId: profile.id }, { email }] })) ||
-          (await Client.findOne({ $or: [{ googleId: profile.id }, { email }] }));
+          (await Freelancer.findOne({
+            $or: [{ googleId: profile.id }, { email }],
+          })) ||
+          (await Client.findOne({
+            $or: [{ googleId: profile.id }, { email }],
+          }));
 
         if (user) {
           if (user.block) {
@@ -43,21 +47,21 @@ passport.use(
           let suffix = 1;
 
           while (
-          (await Freelancer.findOne({ userName })) ||
-          (await Client.findOne({ userName }))
-        ) {
-          userName = `${baseUserName}_${suffix++}`;
-        }
+            (await Freelancer.findOne({ userName })) ||
+            (await Client.findOne({ userName }))
+          ) {
+            userName = `${baseUserName}_${suffix++}`;
+          }
 
-        const newUser = new Model({
-          userName,
-          email,
-          googleId: profile.id,
-          userId: generateUserId(),
-          role,
-        });
+          const newUser = new Model({
+            userName,
+            email,
+            googleId: profile.id,
+            userId: generateUserId(),
+            role,
+          });
 
-        user = await newUser.save();
+          user = await newUser.save();
         }
 
         return done(null, user);
